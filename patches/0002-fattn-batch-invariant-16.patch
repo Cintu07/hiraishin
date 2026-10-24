@@ -1,0 +1,14 @@
+--- a/ggml/src/ggml-cuda/fattn.cu	2026-10-24 22:33:47.551043400 +0530
++++ b/ggml/src/ggml-cuda/fattn.cu	2026-10-24 22:33:47.709845400 +0530
+@@ -484,9 +484,9 @@
+     // If Turing tensor cores are available, use them:
+     if (turing_mma_available(cc) && Q->ne[0] != 40 && Q->ne[0] != 72) {
+         if (can_use_vector_kernel) {
+-            // batch-invariant mode: the same (vector) kernel for 1 to 8 queries, so a token verified in a
++            // batch-invariant mode: the same (vector) kernel for 1 to 16 queries, so a token verified in a
+             // speculative batch attends with the same arithmetic as a token decoded alone
+-            if (ggml_cuda_batch_invariant() && Q->ne[1] <= 8 && Q->ne[3] == 1) {
++            if (ggml_cuda_batch_invariant() && Q->ne[1] <= 16 && Q->ne[3] == 1) {
+                 return BEST_FATTN_KERNEL_VEC;
+             }
+             if (!ggml_is_quantized(K->type) && !ggml_is_quantized(V->type)) {

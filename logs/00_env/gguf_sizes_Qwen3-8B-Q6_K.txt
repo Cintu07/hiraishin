@@ -1,0 +1,6 @@
+file: C:/Users/pavan/Desktop/CIOT-V2/models/Qwen3-8B-Q6_K.gguf
+tensors: 399  total_bytes: 6719942656  (6.258 GiB)
+token_embd_bytes: 510504960  tied_output: False
+weight_bytes_read_per_decode_step: 6209437696  (6.209 GB)
+  Q6_K       6718709760
+  F32           1232896

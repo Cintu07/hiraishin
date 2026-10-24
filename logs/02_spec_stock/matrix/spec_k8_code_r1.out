@@ -1,0 +1,48 @@
+
+
+<|im_start|>user
+Write a Python implementation of an LRU cache class with get and put methods, using a doubly linked list and a dict. Include docstrings, type hints, and a short usage example.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+Here's a Python implementation of an **LRU Cache** using a **doubly linked list** and a **dictionary**. This implementation includes:
+
+- `get(key)` to retrieve a value by key.
+- `put(key, value)` to insert or update a value.
+- Type hints.
+- Docstrings.
+- A short usage example.
+
+---
+
+### ✅ Python Implementation of LRU Cache
+
+```python
+from typing import Dict, Optional, Any
+import time
+
+class Node:
+    """Node for a doubly linked list."""
+    def __init__(self, key: Any, value: Any):
+        self.key = key
+        self.value = value
+        self.prev: Optional[Node] = None
+        self.next: Optional[Node] = None
+
+class LRUCache:
+    """
+    A Least Recently Used (LRU) Cache implementation using a doubly linked list and a dictionary.
+
+    Attributes:
+        capacity (int): Maximum number of items the cache can hold.
+        cache (Dict): Dictionary mapping keys to nodes in the linked list.
+        head (Node): Head of the linked list (most recently used).
+        tail (Node): Tail of the linked list (least recently used).
+    """
+
+    def __init__(self, capacity:
+
+
+

@@ -1,0 +1,26 @@
+
+
+<|im_start|>user
+Explain how a CPU cache hierarchy (L1, L2, L3) works and why cache misses hurt performance. Use concrete latency numbers and one worked example.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+A **CPU cache hierarchy** (L1, L2, L3) is a system of small, fast memory layers that sit between the CPU and main memory (RAM). The goal of the cache hierarchy is to **reduce the time it takes for the CPU to access data** by storing frequently used data in faster, smaller memory layers.
+
+---
+
+## 🔍 **How the CPU Cache Hierarchy Works**
+
+The cache hierarchy is structured in **levels**, with **L1 being the fastest and smallest**, and **L3 being the slowest and largest**. Each level serves as a buffer for the next, with the idea that data accessed in a lower level (closer to the CPU) is more likely to be reused.
+
+### 📦 **Cache Levels and Latencies (in nanoseconds)**
+
+| Level | Size | Latency (ns) | Access Speed | Description |
+|-------|------|--------------|--------------|-------------|
+| **L1** | 8–64 KB | ~0.5–1.5 | Very fast | Closest to CPU, fastest access, smallest size |
+| **L2** | 256 KB–4 MB | ~3–10 | Fast | Second level, larger than L1, slower
+
+
+

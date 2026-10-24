@@ -1,0 +1,28 @@
+0.00.937.122 W common_fit_params: failed to fit params to free device memory: n_gpu_layers already set by user to 99, abort
+0.01.193.929 W load: control-looking token: 128247 '</s>' was not control-type; this is probably a bug in the model. its type will be overridden
+0.04.151.459 I cmn          init: llama threadpool init, n_threads = 14
+0.04.917.172 W common_fit_params: failed to fit params to free device memory: n_gpu_layers already set by user to 99, abort
+0.05.124.062 W load: control-looking token: 128247 '</s>' was not control-type; this is probably a bug in the model. its type will be overridden
+0.05.887.768 I cmn          init: llama threadpool init, n_threads = 14
+0.09.828.880 I encoded   77 tokens in    0.130 seconds, speed:  592.444 t/s
+0.09.828.882 I decoded  257 tokens in    3.783 seconds, speed:   67.942 t/s
+0.09.828.882 I 
+0.09.828.883 I n_draft   = 2
+0.09.828.883 I n_predict = 257
+0.09.828.883 I n_drafted = 200
+0.09.828.884 I n_accept  = 156
+0.09.828.885 I accept    = 78.000%
+0.09.828.885 I 
+0.09.828.885 I draft:
+
+0.09.828.891 I 
+0.09.828.891 I target:
+
+0.09.828.893 I common_perf_print:    sampling time =      28.92 ms
+0.09.828.893 I common_perf_print:    samplers time =       0.61 ms /   257 tokens
+0.09.828.894 I common_perf_print:        load time =    3190.12 ms
+0.09.828.896 I common_perf_print: prompt eval time =    2990.79 ms /   377 tokens (    7.93 ms per token,   126.05 tokens per second)
+0.09.828.898 I common_perf_print:        eval time =       0.00 ms /     1 runs   (    0.00 ms per token,      inf tokens per second)
+0.09.828.899 I common_perf_print:       total time =    5585.88 ms /   378 tokens
+0.09.828.900 I common_perf_print: unaccounted time =    2566.17 ms /  45.9 %      (total - sampling - prompt eval - eval) / (total)
+0.09.828.901 I common_perf_print:    graphs reused =         98

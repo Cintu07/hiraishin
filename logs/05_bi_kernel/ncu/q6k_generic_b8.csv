@@ -1,0 +1,22 @@
+==PROF== Connected to process 290169 (/home/pavan/hiraishin-build/bin/spec_harness-build-cuda-hira)
+{"event":"loaded","target":"/home/pavan/models/Qwen3-8B-Q6_K.gguf","draft":"","n_vocab":151936}
+{"event":"plain","prompt":"code","rep":1,"n_prompt":50,"n":40,"ms_total":1716.808,"tok_s":22.717,"step_ms_median":38.810,"same_as_rep1":true}
+{"event":"invariance","prompt":"code","B":8,"positions":39,"argmax_mismatches":0,"first_mismatch":-1,"max_abs_dlogit_top1":0.000000,"min_plain_margin_at_mismatch":-1.000000,"pad_guard":true,"first_nonzero_idx":-1,"first_nonzero_kvpos":-1,"first_nonzero_dlogit":0.000000,"n_prompt":50}
+==PROF== Disconnected from process 290169
+==WARNING== No kernels were profiled.
+Available Kernels:
+1. flash_attn_combine_results
+2. flash_attn_ext_f16
+3. flash_attn_ext_vec
+4. flash_attn_stream_k_fixup_general
+5. k_bin_bcast
+6. k_get_rows_float
+7. k_set_rows
+8. mul_mat_q
+9. mul_mat_q_stream_k_fixup
+10. mul_mat_vec_q
+11. quantize_mmq_q8_1
+12. quantize_q8_1
+13. rms_norm_f32
+14. rms_norm_mul_rope_f32
+15. unary_gated_op_kernel

@@ -1,0 +1,9 @@
+66b78c9 hiraishin: batch-invariant mmvq and fattn for speculative verify
+
+real	1m17.853s
+user	1m56.929s
+sys	0m11.022s
+build_exit=0
+[446/448] Linking CXX executable bin/llama-speculative
+[447/448] Linking CXX executable bin/llama-completion
+[448/448] Linking CXX executable bin/llama-bench

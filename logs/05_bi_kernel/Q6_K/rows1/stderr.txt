@@ -1,0 +1,4 @@
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 8150 MiB):
+  Device 0: NVIDIA GeForce RTX 5060 Laptop GPU, compute capability 12.0, VMM: yes, VRAM: 8150 MiB
+load: control-looking token: 128247 '</s>' was not control-type; this is probably a bug in the model. its type will be overridden
+.......................................................................................

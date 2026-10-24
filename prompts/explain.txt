@@ -1,0 +1,8 @@
+<|im_start|>user
+Explain how a CPU cache hierarchy (L1, L2, L3) works and why cache misses hurt performance. Use concrete latency numbers and one worked example.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

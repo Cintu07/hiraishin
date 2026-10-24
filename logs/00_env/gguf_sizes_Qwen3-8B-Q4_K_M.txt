@@ -1,0 +1,7 @@
+file: C:/Users/pavan/models/Qwen3-8B-GGUF/Qwen3-8B-Q4_K_M.gguf
+tensors: 399  total_bytes: 5021827072  (4.677 GiB)
+token_embd_bytes: 350060544  tied_output: False
+weight_bytes_read_per_decode_step: 4671766528  (4.672 GB)
+  Q4_K       3704979456
+  Q6_K       1315614720
+  F32           1232896

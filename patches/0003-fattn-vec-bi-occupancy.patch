@@ -1,0 +1,42 @@
+--- a/ggml/src/ggml-cuda/fattn-common.cuh	2026-10-24 23:15:23.469506300 +0530
++++ b/ggml/src/ggml-cuda/fattn-common.cuh	2026-10-24 23:15:38.311350100 +0530
+@@ -972,7 +972,10 @@
+ template <int DV, int ncols1, int ncols2>
+ void launch_fattn(
+     ggml_backend_cuda_context & ctx, ggml_tensor * dst, fattn_kernel_t fattn_kernel, const int nwarps, const size_t nbytes_shared,
+-    const int nbatch_fa, const bool need_f16_K, const bool need_f16_V, const bool stream_k, const int warp_size = WARP_SIZE
++    const int nbatch_fa, const bool need_f16_K, const bool need_f16_V, const bool stream_k, const int warp_size = WARP_SIZE,
++    // batch-invariant mode: size the KV split (parallel_blocks) from this kernel's occupancy instead, so a batched
++    // launch splits KV exactly like the one-query launch it has to reproduce
++    fattn_kernel_t occupancy_kernel = nullptr
+ ) {
+     constexpr int ncols = ncols1 * ncols2;
+ 
+@@ -1110,7 +1113,8 @@
+ 
+     const dim3 block_dim(warp_size, nwarps, 1);
+     int max_blocks_per_sm = 1; // Max. number of active blocks limited by occupancy.
+-    CUDA_CHECK(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm, fattn_kernel, block_dim.x * block_dim.y * block_dim.z, nbytes_shared));
++    CUDA_CHECK(cudaOccupancyMaxActiveBlocksPerMultiprocessor(&max_blocks_per_sm, occupancy_kernel ? occupancy_kernel : fattn_kernel,
++        block_dim.x * block_dim.y * block_dim.z, nbytes_shared));
+     GGML_ASSERT(max_blocks_per_sm > 0);
+     int parallel_blocks = max_blocks_per_sm;
+ 
+--- a/ggml/src/ggml-cuda/fattn-vec.cuh	2026-10-24 23:15:23.701324100 +0530
++++ b/ggml/src/ggml-cuda/fattn-vec.cuh	2026-10-24 23:15:38.311350100 +0530
+@@ -540,7 +540,14 @@
+     const bool need_f16_K = type_K == GGML_TYPE_F16;
+     const bool need_f16_V = type_V == GGML_TYPE_F16;
+     constexpr size_t nbytes_shared = 0;
+-    launch_fattn<D, cols_per_block, 1>(ctx, dst, fattn_kernel, nwarps, nbytes_shared, D, need_f16_K, need_f16_V, false);
++    // batch-invariant mode: 2+ queries must split the KV range like the one-query kernel does (parallel_blocks
++    // follows occupancy, and the two kernels can have different occupancy)
++    fattn_kernel_t occupancy_kernel = nullptr;
++    if (cols_per_block > 1 && ggml_cuda_batch_invariant()) {
++        occupancy_kernel = flash_attn_ext_vec<D, 1, type_K, type_V, use_logit_softcap>;
++    }
++    launch_fattn<D, cols_per_block, 1>(ctx, dst, fattn_kernel, nwarps, nbytes_shared, D, need_f16_K, need_f16_V, false,
++                                       WARP_SIZE, occupancy_kernel);
+ }
+ 
+ template <int D, ggml_type type_K, ggml_type type_V>

@@ -1,0 +1,6 @@
+==PROF== Connected to process 290267 (/home/pavan/hiraishin-build/bin/spec_harness-build-cuda-hira)
+==ERROR== ERR_NVGPUCTRPERM - The user does not have permission to access NVIDIA GPU Performance Counters on the target device 0. For instructions on enabling permissions and to get more information see https://developer.nvidia.com/ERR_NVGPUCTRPERM
+{"event":"loaded","target":"/home/pavan/models/Qwen3-8B-Q6_K.gguf","draft":"","n_vocab":151936}
+{"event":"plain","prompt":"code","rep":1,"n_prompt":50,"n":24,"ms_total":2009.715,"tok_s":11.444,"step_ms_median":84.407,"same_as_rep1":true}
+{"event":"invariance","prompt":"code","B":8,"positions":23,"argmax_mismatches":0,"first_mismatch":-1,"max_abs_dlogit_top1":0.000000,"min_plain_margin_at_mismatch":-1.000000,"pad_guard":true,"first_nonzero_idx":-1,"first_nonzero_kvpos":-1,"first_nonzero_dlogit":0.000000,"n_prompt":50}
+==PROF== Disconnected from process 290267

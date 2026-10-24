@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a Python implementation of an LRU cache class with get and put methods, using a doubly linked list and a dict. Include docstrings, type hints, and a short usage example.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

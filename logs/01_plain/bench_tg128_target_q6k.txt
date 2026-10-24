@@ -1,0 +1,17 @@
+﻿llama-bench.exe : ggml_cuda_init: found 1 CUDA devices (Total VRAM: 8150 MiB):
+At line:3 char:1
++ & "$rt\llama-bench.exe" -m "$m\Qwen3-8B-Q6_K.gguf" -ngl 99 -fa 1 -p 0 ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ggml_cuda_init:...RAM: 8150 MiB)::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Device 0: NVIDIA GeForce RTX 5060 Laptop GPU, compute capability 12.0, VMM: yes, VRAM: 8150 MiB
+load_backend: loaded CUDA backend from C:\Users\pavan\Desktop\CIOT-V2\gpu-runtime\ggml-cuda.dll
+load_backend: loaded RPC backend from C:\Users\pavan\Desktop\CIOT-V2\gpu-runtime\ggml-rpc.dll
+load_backend: loaded CPU backend from C:\Users\pavan\Desktop\CIOT-V2\gpu-runtime\ggml-cpu-alderlake.dll
+| model                          |       size |     params | backend    | ngl |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | --: | --: | --------------: | -------------------: |
+| qwen3 8B Q6_K                  |   6.26 GiB |     8.19 B | CUDA       |  99 |   1 |           tg128 |         37.36 ± 0.41 |
+| qwen3 8B Q6_K                  |   6.26 GiB |     8.19 B | CUDA       |  99 |   1 |    tg128 @ d512 |         37.46 ± 0.78 |
+
+build: e8fd209c9 (10772)

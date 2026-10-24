@@ -1,0 +1,14 @@
+user
+Write a Python implementation of an LRU cache class with get and put methods, using a doubly linked list and a dict. Include docstrings, type hints, and a short usage example.
+assistant
+<think>
+
+</think>
+
+Here's a Python implementation of an **LRU Cache** using a **doubly linked list** and a **dictionary**. This implementation includes:
+
+- `get(key)` to retrieve a value by key.
+- `put(key, value)` to insert or update a value.
+- Type hints.
+- Docstrings
+

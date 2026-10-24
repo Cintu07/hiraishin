@@ -1,0 +1,8 @@
+<|im_start|>user
+Solve step by step: a tank is filled by pipe A in 6 hours and by pipe B in 9 hours, and drained by pipe C in 12 hours. All three are opened at 8:00 with the tank empty. At what time is the tank full? Then verify the answer.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

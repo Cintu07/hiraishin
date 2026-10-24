@@ -1,0 +1,4 @@
+{"event":"draft_probe","pattern":"draft_b1_only","b1_ms_median":3.8131,"b2_ms_median":0.0000,"n_b1":36,"n_b2":0}
+{"event":"draft_probe","pattern":"draft_alt_b2_b1","b1_ms_median":6.7783,"b2_ms_median":8.5073,"n_b1":18,"n_b2":18}
+{"event":"draft_probe","pattern":"draft_b1_after_target_b5","b1_ms_median":4.5692,"b2_ms_median":0.0000,"n_b1":36,"n_b2":0}
+{"event":"draft_probe","pattern":"draft_b2_only","b1_ms_median":0.0000,"b2_ms_median":3.6142,"n_b1":0,"n_b2":36}

@@ -1,0 +1,9 @@
+e8fd209 grammar: allow schema property order (#347)
+
+real	10m55.976s
+user	102m43.839s
+sys	6m41.577s
+build_exit=0
+[527/529] Linking CXX shared library bin/libllama-server-impl.so
+[528/529] Linking CXX shared library bin/libllama-cli-impl.so
+[529/529] Linking CXX executable bin/llama-cli
