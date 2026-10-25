@@ -34,7 +34,7 @@ WSL decodes faster than the Windows prebuilt: Q6_K tg128 44.4 tok/s (276 GB/s ef
 
 ## Not finished
 
-- Final lossless run (`scripts/run_final.sh`) was stopped partway: `logs/06_final/q4km_q8draft/results.jsonl` holds 169 lines (all prompts up to k=6). Q6_K final not run.
+- Absolute tok/s on AC power (the 2026-10-25 final run was battery-limited).
 - Not yet tried: PQ2_0 0.6B drafter, n-gram drafting, the kernel past 4 rows/block, tuning tau.
 - Nsight Compute needs "allow GPU performance counters for all users" in the NVIDIA Control Panel (admin); not changed.
 
