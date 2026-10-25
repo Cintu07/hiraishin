@@ -17,8 +17,14 @@ ROOT = os.path.join(os.path.dirname(__file__), "..")
 OUT = os.path.join(ROOT, "docs", "x")
 os.makedirs(OUT, exist_ok=True)
 
-SURFACE, INK, INK2, MUTED, GRID, BASE = "#1a1a19", "#f0efec", "#c3c2b7", "#898781", "#2c2c2a", "#383835"
-BLUE, ORANGE, AQUA, GRAY = "#3987e5", "#d95926", "#199e70", "#6f6e69"
+if os.environ.get("THEME") == "beige":
+    # light steps of the same palette, validated on #f3ecdd (orange/aqua < 3:1, relieved by direct value labels)
+    SURFACE, INK, INK2, MUTED, GRID, BASE = "#f3ecdd", "#0b0b0b", "#52514e", "#7a756b", "#e3d9c6", "#c9bda5"
+    BLUE, ORANGE, AQUA, GRAY = "#2a78d6", "#eb6834", "#1baf7a", "#9d978b"
+else:
+    SURFACE, INK, INK2, MUTED, GRID, BASE = "#1a1a19", "#f0efec", "#c3c2b7", "#898781", "#2c2c2a", "#383835"
+    BLUE, ORANGE, AQUA, GRAY = "#3987e5", "#d95926", "#199e70", "#6f6e69"
+ON_FILL = "#ffffff"  # label inside a categorical fill
 
 plt.rcParams.update({
     "font.family": ["Segoe UI", "DejaVu Sans"], "font.size": 15,
@@ -67,9 +73,9 @@ for si, (name, color, col) in enumerate(series):
         ax.bar(x, v, w, color=color, label=name if xi == 0 else None, zorder=3)
         ax.text(x, v + 1.5, f"{v:.1f}", ha="center", va="bottom", fontsize=17, fontweight="bold", color=INK)
         if col == 2:
-            ax.text(x, 3, f"{r[3]}/{r[4]}\nexact", ha="center", va="bottom", fontsize=13, color=INK, zorder=4)
+            ax.text(x, 3, f"{r[3]}/{r[4]}\nexact", ha="center", va="bottom", fontsize=13, color=ON_FILL, zorder=4)
         if col == 5:
-            ax.text(x, 3, f"{r[6]}/{r[7]}\nexact", ha="center", va="bottom", fontsize=13, color=INK, zorder=4)
+            ax.text(x, 3, f"{r[6]}/{r[7]}\nexact", ha="center", va="bottom", fontsize=13, color=ON_FILL, zorder=4)
 ax.set_xticks(list(xs), [r[0] for r in rows], fontsize=17, color=INK)
 ax.set_ylabel("tokens / second")
 ax.set_ylim(0, max(r[5] for r in rows) * 1.18)
