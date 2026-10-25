@@ -24,6 +24,14 @@ WSL decodes faster than the Windows prebuilt: Q6_K tg128 44.4 tok/s (276 GB/s ef
 | Fixed 2-token draft calls (avoid graph rebuild on shape change): k=2 60.2 -> 68.1, k=4 64.7 -> 69.8 tok/s (Q6_K) | `logs/04_draft_probe/` |
 | BI Q4_K/Q6_K kernel (patch 0004, 4 rows/block) vs generic BI path, verify cost x B=1: Q4_K_M B5 1.74 -> 1.41, B8 2.66 -> 2.03; Q6_K B5 1.39 -> 1.30, B8 2.05 -> 1.77; still bit-exact | `logs/05_bi_kernel/v3_*` |
 
+## Final lossless run (2026-10-25, on battery, see logs/06_final/summary.md)
+
+- 104/104 speculative runs token-identical to plain decode on both models; 0 argmax flips, max |dlogit| 0.000000.
+- Q4_K_M best single setting k=2 tau=0: 81.8 tok/s = 1.65x plain (49.7 tok/s on battery).
+- Q6_K best single setting k=5 tau=1: 61.6 tok/s = 1.72x plain (35.8 tok/s on battery).
+- Adaptive tau rescues large k (Q4_K_M k=8: 64.6 -> 79.6 tok/s at tau=2-3) but does not beat k=2 on Q4_K_M.
+- To do: rerun on AC power (plain + stock spec + final in one session) for absolute numbers.
+
 ## Not finished
 
 - Final lossless run (`scripts/run_final.sh`) was stopped partway: `logs/06_final/q4km_q8draft/results.jsonl` holds 169 lines (all prompts up to k=6). Q6_K final not run.
