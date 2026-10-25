@@ -1,16 +1,22 @@
 """Final comparison table: plain vs stock speculative (lossy) vs patched lossless speculative.
 
 Means are over the 4 prompts (equal weight per prompt). "lossless" = every run's token ids equal plain decode.
-usage: python -I scripts/final_summary.py
+usage: python -I scripts/final_summary.py            (2026-10-24 stock vs 2026-10-25 battery final)
+       python -I scripts/final_summary.py <session>  (stock_<m> and hira_<m> from one session dir)
 """
 import collections
 import json
 import statistics as st
+import sys
 
-RUNS = {
-    "Qwen3-8B Q4_K_M": ("logs/03_harness/q4km_stock", "logs/06_final/q4km_q8draft"),
-    "Qwen3-8B Q6_K": ("logs/03_harness/q6k_stock", "logs/06_final/q6k_q8draft"),
-}
+if len(sys.argv) > 1:
+    S = sys.argv[1]
+    RUNS = {f"Qwen3-8B {m}": (f"{S}/stock_{m}", f"{S}/hira_{m}") for m in ("Q4_K_M", "Q6_K")}
+else:
+    RUNS = {
+        "Qwen3-8B Q4_K_M": ("logs/03_harness/q4km_stock", "logs/06_final/q4km_q8draft"),
+        "Qwen3-8B Q6_K": ("logs/03_harness/q6k_stock", "logs/06_final/q6k_q8draft"),
+    }
 
 
 def load(d):

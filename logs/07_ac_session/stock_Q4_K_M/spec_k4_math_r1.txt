@@ -1,0 +1,31 @@
+We are given:
+
+- **Pipe A** fills the tank in **6 hours**  
+- **Pipe B** fills the tank in **9 hours**  
+- **Pipe C** drains the tank in **12 hours**  
+- All three pipes are opened at **8:00 AM**  
+- The tank is **empty** at the start
+
+We are to find **at what time the tank becomes full**.
+
+---
+
+### Step 1: Determine the rates of each pipe
+
+Let’s assume the **total volume of the tank is 1 unit**.
+
+- **Rate of Pipe A** = $ \frac{1}{6} $ tank per hour  
+- **Rate of Pipe B** = $ \frac{1}{9} $ tank per hour  
+- **Rate of Pipe C** = $ -\frac{1}{12} $ tank per hour (negative because it drains)
+
+---
+
+### Step 2: Combine the rates
+
+Total rate when all three pipes are open:
+
+$$
+\text{Total rate} = \frac{1}{6} + \frac{1}{9} - \frac{1}{12}
+$$
+
+Find a common denominator (LCM of 6, 9, 1

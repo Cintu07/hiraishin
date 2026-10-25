@@ -32,9 +32,20 @@ WSL decodes faster than the Windows prebuilt: Q6_K tg128 44.4 tok/s (276 GB/s ef
 - Adaptive tau rescues large k (Q4_K_M k=8: 64.6 -> 79.6 tok/s at tau=2-3) but does not beat k=2 on Q4_K_M.
 - To do: rerun on AC power (plain + stock spec + final in one session) for absolute numbers.
 
+## Same-session run on AC power (2026-10-25, logs/07_ac_session/summary.md)
+
+Plain, stock speculative (unpatched, lossy) and hiraishin lossless measured back to back, same conditions
+(GPU power limit 61.7 W at start, 93.5 W at end, no thermal slowdown at 81 C mid-run).
+
+| target | plain | best stock spec (lossy) | best hiraishin lossless | lossless runs |
+|---|---:|---:|---:|---|
+| Q4_K_M | 58.4 tok/s | 86.1 (k=8), 1-2/4 runs exact | 91.8 (k=8, tau=3), 1.57x | 104/104 |
+| Q6_K | 48.1 tok/s | 85.5 (k=8), 1-2/4 runs exact | 83.7 (k=8, tau=3), 1.74x | 104/104 |
+
+Q4_K_M k=8 tau=3 per prompt: code 78.7, explain 80.5, rewrite 107.2, math 100.9 tok/s. 100+ on 2 of 4 prompts, not on the mean.
+
 ## Not finished
 
-- Absolute tok/s on AC power (the 2026-10-25 final run was battery-limited).
 - Not yet tried: PQ2_0 0.6B drafter, n-gram drafting, the kernel past 4 rows/block, tuning tau.
 - Nsight Compute needs "allow GPU performance counters for all users" in the NVIDIA Control Panel (admin); not changed.
 

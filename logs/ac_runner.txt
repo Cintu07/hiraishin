@@ -1,0 +1,6 @@
+bench Q4_K_M exit=0
+exit=0 lines=29
+exit=0 lines=169
+bench Q6_K exit=0
+exit=0 lines=29
+exit=0 lines=169

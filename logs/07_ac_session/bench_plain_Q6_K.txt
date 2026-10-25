@@ -1,0 +1,8 @@
+ggml_cuda_init: found 1 CUDA devices (Total VRAM: 8150 MiB):
+  Device 0: NVIDIA GeForce RTX 5060 Laptop GPU, compute capability 12.0, VMM: yes, VRAM: 8150 MiB
+| model                          |       size |     params | backend    | ngl |  fa |            test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | --: | --: | --------------: | -------------------: |
+| qwen3 8B Q6_K                  |   6.26 GiB |     8.19 B | CUDA       |  99 |   1 |           tg128 |         45.16 ± 8.61 |
+| qwen3 8B Q6_K                  |   6.26 GiB |     8.19 B | CUDA       |  99 |   1 |    tg128 @ d512 |         48.43 ± 0.18 |
+
+build: e8fd209 (15)

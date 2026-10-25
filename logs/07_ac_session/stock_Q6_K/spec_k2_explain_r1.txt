@@ -1,0 +1,13 @@
+A **CPU cache hierarchy** (L1, L2, L3) is a system of small, fast memory layers that sit between the CPU and main memory (RAM). The goal of the cache hierarchy is to **reduce the time it takes for the CPU to access data** by storing frequently used data in faster, smaller memory layers.
+
+---
+
+## 🔍 **How the CPU Cache Hierarchy Works**
+
+The cache hierarchy is structured in **levels**, with **L1 being the fastest and smallest**, and **L3 being the slowest and largest**. Here's a breakdown:
+
+| Level | Size | Speed | Latency | Purpose |
+|-------|------|-------|---------|---------|
+| **L1** | 8–64 KB | Very fast (on-die) | ~1–3 cycles | Fastest access, used for most frequently accessed data |
+| **L2** | 256 KB–4 MB | Faster than RAM | ~4–10 cycles | Secondary cache, used for data not in L1 |
+| **L3** | 4 MB–32 MB | Slower than L2 | ~10–40 cycles | Shared among all cores, used for data not in L1
