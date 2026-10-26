@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a SQL schema for a small library system with books, members and loans, then three example queries: overdue loans, most borrowed books, and members with no loans.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

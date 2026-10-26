@@ -1,0 +1,78 @@
+Hash tables are data structures that use a hash function to map keys to indices in an array. However, since multiple keys can map to the same index (a **collision**), hash tables must handle these collisions efficiently. There are two primary methods for handling collisions: **chaining** and **open addressing**. Let's compare them in terms of how they work and their trade-offs.
+
+---
+
+## 🔐 **Chaining**
+
+### **How it works:**
+- Each index in the array contains a **linked list** (or another data structure like a balanced tree) of entries that hash to the same index.
+- When a collision occurs, the new key-value pair is added to the linked list at that index.
+
+### **Example:**
+If the hash function maps both key A and key B to index 5, then both entries are stored in the linked list at index 5.
+
+### **Pros:**
+- **Efficient for large numbers of collisions**: Since each bucket is a separate structure, the performance of the hash table doesn't degrade as much with more collisions.
+- **Easier to implement**: Especially with linked lists, which are straightforward to manage.
+- **Supports multiple data types**: Can handle different types of keys and values.
+
+### **Cons:**
+- **Memory overhead**: Each bucket requires additional memory for the linked list structure.
+- **Potential for long chains**: If the number of collisions is high, the linked list can become long, leading to slower lookups and insertions.
+- **Not cache-friendly**: Linked lists are not as cache-efficient as arrays, which can affect performance in certain scenarios.
+
+---
+
+## 🔍 **Open Addressing**
+
+### **How it works:**
+- All elements are stored in the array itself.
+- When a collision occurs, the hash table uses a **probe sequence** (like linear probing, quadratic probing, or double hashing) to find the next available slot in the array.
+
+### **Example:**
+If the hash function maps key A to index 5, and that index is already occupied, the algorithm probes the next index (e.g., 6, 7, etc.) until it finds an empty slot.
+
+### **Pros:**
+- **Better cache performance**: Since all elements are stored in a contiguous array, it's more cache-friendly.
+- **Lower memory overhead**: No need for additional data structures like linked lists.
+- **Simpler for small datasets**: Especially when the number of collisions is low.
+
+### **Cons:**
+- **Requires more complex probing strategies**: Linear probing can lead to **primary clustering**, while quadratic probing can be more complex to implement.
+- **Worse performance with high collision rates**: As the table becomes full, the time to find an empty slot increases.
+- **Requires resizing**: When the load factor (number of elements / size of array) becomes too high, the table must be resized, which is computationally expensive.
+
+---
+
+## 📊 **Comparison Summary**
+
+| Feature | Chaining | Open Addressing |
+|--------|----------|-----------------|
+| **Collision Handling** | Uses linked lists or other structures | Uses probing sequences |
+| **Memory Usage** | Higher (due to linked lists) | Lower (all in array) |
+| **Cache Efficiency** | Lower | Higher |
+| **Insertion/Deletion Time** | O(1) average | O(1) average |
+| **Search Time** | O(1) average | O(1) average |
+| **Handling of Large Collisions** | Better | Worse |
+| **Implementation Complexity** | Moderate | Higher (due to probing) |
+| **Resizing** | Not required unless needed | Required when load factor is high |
+
+---
+
+## 🎯 **When to Use Which?**
+
+- **Use chaining** if:
+  - You expect a high number of collisions.
+  - You need to support multiple data types or complex keys.
+  - You're working in a language where linked lists are easy to implement.
+
+- **Use open addressing** if:
+  - You're working with a language that has efficient array access (e.g., C, C++, Java).
+  - You want better cache performance and lower memory overhead.
+  - You're dealing with a relatively small number of collisions.
+
+---
+
+## ✅ **Conclusion**
+
+Both chaining and open addressing are effective methods for handling collisions in hash tables, but they have different trade-offs in terms of performance, memory usage, and implementation complexity. The choice between them depends on the specific use case, the expected number of collisions, and the programming environment.

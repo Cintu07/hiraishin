@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a Python function that parses a CSV file of transactions (date, description, amount) and returns the total spent per month. Include type hints and a short example.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

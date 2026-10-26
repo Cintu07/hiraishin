@@ -1,0 +1,67 @@
+Public key cryptography allows two strangers to agree on a secret over an open channel by using a pair of mathematically related keys: a **public key** and a **private key**. Here's how it works step by step:
+
+---
+
+### 1. **Key Pair Generation**
+Each person generates a **pair of keys**:
+- **Public Key**: Can be shared openly with anyone.
+- **Private Key**: Must be kept secret and is used only by the owner.
+
+For example:
+- Alice generates a public key (PubA) and a private key (PrivA).
+- Bob generates a public key (PubB) and a private key (PrivB).
+
+---
+
+### 2. **Exchange of Public Keys**
+- Alice and Bob exchange their **public keys** over the open channel.
+- This exchange is secure because the public key can be shared without risk.
+
+---
+
+### 3. **Agreeing on a Secret**
+To agree on a secret, they can use a **key exchange protocol**, such as the **Diffie-Hellman key exchange**. Here's how it works:
+
+#### a. **Alice computes a shared secret**
+- Alice picks a random number, say `a`, and computes:
+  $$
+  A = (g^a) \mod p
+  $$
+  where `g` is a generator and `p` is a large prime number.
+- She sends `A` to Bob using his public key (PubB).
+
+#### b. **Bob computes the same shared secret**
+- Bob picks a random number, say `b`, and computes:
+  $$
+  B = (g^b) \mod p
+  $$
+- He sends `B` to Alice using her public key (PubA).
+
+#### c. **Both compute the shared secret**
+- Alice computes:
+  $$
+  S = (B^a) \mod p
+  $$
+- Bob computes:
+  $$
+  S = (A^b) \mod p
+  $$
+- Since $ B = g^b $ and $ A = g^a $, both calculations result in the same value `S`, which is the **shared secret**.
+
+---
+
+### 4. **Using the Shared Secret**
+- The shared secret `S` can be used as a **session key** for encrypting further communications.
+- This key is never transmitted over the open channel, so it remains secure even if the communication is intercepted.
+
+---
+
+### Why It Works
+- **Public keys** are used to encrypt messages or keys, and **private keys** are used to decrypt them.
+- Even though the public keys are shared, the **private keys remain secret**, ensuring that only the intended recipient can decrypt the shared secret.
+- The **mathematical properties** of public key cryptography (like the difficulty of computing discrete logarithms) make it computationally infeasible for an attacker to determine the shared secret from the public information.
+
+---
+
+### Summary
+Public key cryptography enables two strangers to agree on a secret over an open channel by using a secure key exchange protocol like Diffie-Hellman. This allows them to establish a shared secret without ever transmitting it directly, ensuring confidentiality and security.

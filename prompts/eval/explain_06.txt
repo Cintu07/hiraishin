@@ -1,0 +1,8 @@
+<|im_start|>user
+Explain how vaccines train the immune system, including the role of memory cells.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

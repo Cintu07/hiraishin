@@ -1,0 +1,58 @@
+Public key cryptography allows two strangers to agree on a secret over an open channel by using a pair of mathematically related keys: a **public key** and a **private key**. Here's how it works step by step:
+
+---
+
+### 1. **Key Pair Generation**
+Each person generates a **pair of keys**:
+- A **public key** (which can be shared openly)
+- A **private key** (which must be kept secret)
+
+These keys are mathematically linked, but it's computationally infeasible to derive the private key from the public key.
+
+---
+
+### 2. **Exchange of Public Keys**
+The two strangers exchange their **public keys** over the open channel. Since the public key is not sensitive, it can be sent without encryption.
+
+---
+
+### 3. **Agreeing on a Secret (Shared Key)**
+Each person uses the other's public key to encrypt a **random number** (or a **shared secret**) and sends it to the other. Here's how it works:
+
+- **Alice** generates a random number, say `A`, and encrypts it using **Bob's public key**. She sends the encrypted message to Bob.
+- **Bob** receives the encrypted message and decrypts it using his **private key** to get `A`.
+
+Then, **Bob** generates another random number, `B`, and encrypts it using **Alice's public key**, sending it back to Alice.
+
+- **Alice** decrypts the message using her **private key** to get `B`.
+
+Now, both Alice and Bob can compute the **same shared secret** using the two random numbers `A` and `B`. For example, they might compute:
+
+```
+Shared Secret = Hash(A + B)  or  Hash(A * B)
+```
+
+This shared secret is the agreed-upon secret.
+
+---
+
+### 4. **Using the Shared Secret**
+Once they have the shared secret, they can use it as a **symmetric key** for further communication. Symmetric encryption (like AES) is faster and more efficient than public key encryption, so they can now securely exchange messages using the shared secret.
+
+---
+
+### Why This Works
+- The **public key** allows anyone to encrypt a message, but only the **private key** can decrypt it.
+- Even though the public key is shared, the private key remains secret, so the shared secret can't be intercepted or guessed.
+- The use of a **random number** ensures that the shared secret is unique and unpredictable.
+
+---
+
+### Summary
+Public key cryptography enables two strangers to agree on a secret over an open channel by:
+1. Exchanging public keys.
+2. Encrypting random numbers with each other's public keys.
+3. Deriving a shared secret from the decrypted numbers.
+4. Using that shared secret for secure communication.
+
+This process is the foundation of secure communication protocols like **TLS/SSL**, **SSH**, and **PGP**.

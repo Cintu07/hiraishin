@@ -1,0 +1,23 @@
+<|im_start|>user
+Add input validation and docstrings to this Python function without changing its results:
+
+```python
+def process(items):
+    result = []
+    for i in range(len(items)):
+        if items[i] != None:
+            if items[i] > 0:
+                result.append(items[i] * 2)
+            else:
+                result.append(0)
+    total = 0
+    for r in result:
+        total = total + r
+    return result, total
+```<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

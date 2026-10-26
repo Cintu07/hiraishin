@@ -1,0 +1,24 @@
+**Subject:** Status Update & Action Items from Tuesday Planning Meeting
+
+Hi Team,
+
+Here's a quick summary of the key points and action items from our Tuesday planning meeting:
+
+**Status Overview:**
+- The payment service migration is two weeks behind schedule due to undocumented triggers in the old database schema.
+- The team has agreed to freeze new features on the checkout page until the migration is complete.
+- The mobile app crash rate increased from 0.4% to 1.1% after the last release. Most crashes are traced to the image cache, and a fix is being prepared.
+
+**Hiring Update:**
+- One backend role has been approved.
+- The frontend role is still pending budget approval.
+
+**Action Items:**
+- **Priya:** Document the undocumented triggers by **Friday**.
+- **Marco:** Write and send the feature-freeze announcement **today**.
+- **Lena:** Ship the image cache fix by **Thursday** and report the new crash rate **next Tuesday**.
+
+Let me know if you need any additional details or support with these tasks.
+
+Best,  
+[Your Name]

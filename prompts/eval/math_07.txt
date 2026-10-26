@@ -1,0 +1,8 @@
+<|im_start|>user
+A bag has 4 red and 6 blue marbles. Two are drawn without replacement. What is the probability both are the same color? Show the calculation.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

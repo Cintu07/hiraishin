@@ -1,0 +1,118 @@
+Here's an implementation of a **thread-safe bounded queue** in Rust with `push` and `pop` methods that **block when the queue is full or empty**, respectively. This implementation uses **Rust's standard library concurrency primitives** such as `Mutex`, `Condvar`, and `Arc` for thread safety and blocking behavior.
+
+---
+
+## ✅ Design Overview
+
+- **Bounded Queue**: The queue has a fixed maximum capacity.
+- **Thread-safe**: Uses `Arc<Mutex<...>>` to allow multiple threads to access the queue safely.
+- **Blocking behavior**:
+  - `push` blocks when the queue is full.
+  - `pop` blocks when the queue is empty.
+- **Condition variables** (`Condvar`) are used to signal when the queue becomes non-full or non-empty.
+
+---
+
+## 🧩 Implementation
+
+```rust
+use std::sync::{Arc, Mutex, Condvar};
+use std::thread;
+use std::time::Duration;
+
+struct BoundedQueue<T> {
+    queue: Vec<T>,
+    capacity: usize,
+    not_full: Condvar,
+    not_empty: Condvar,
+    lock: Mutex<()>,
+}
+
+impl<T> BoundedQueue<T> {
+    pub fn new(capacity: usize) -> Self {
+        BoundedQueue {
+            queue: Vec::with_capacity(capacity),
+            capacity,
+            not_full: Condvar::new(),
+            not_empty: Condvar::new(),
+            lock: Mutex::new(()),
+        }
+    }
+
+    pub fn push(&self, item: T) {
+        let mut guard = self.lock.lock().unwrap();
+        while self.queue.len() >= self.capacity {
+            // Wait until the queue is not full
+            guard = self.not_full.wait(guard).unwrap();
+        }
+        self.queue.push(item);
+        // Notify that the queue is not empty
+        self.not_empty.notify_one();
+    }
+
+    pub fn pop(&self) -> Option<T> {
+        let mut guard = self.lock.lock().unwrap();
+        while self.queue.is_empty() {
+            // Wait until the queue is not empty
+            guard = self.not_empty.wait(guard).unwrap();
+        }
+        let item = self.queue.remove(0);
+        // Notify that the queue is not full
+        self.not_full.notify_one();
+        Some(item)
+    }
+}
+
+fn main() {
+    let queue = Arc::new(BoundedQueue::new(5));
+    let queue_clone = queue.clone();
+
+    // Producer thread
+    thread::spawn(move || {
+        for i in 0..10 {
+            queue.push(i);
+            println!("Produced: {}", i);
+            thread::sleep(Duration::from_millis(100));
+        }
+    });
+
+    // Consumer thread
+    thread::spawn(move || {
+        for _ in 0..10 {
+            if let Some(item) = queue.pop() {
+                println!("Consumed: {}", item);
+            }
+            thread::sleep(Duration::from_millis(150));
+        }
+    });
+
+    // Wait for threads to finish
+    thread::sleep(Duration::from_secs(2));
+}
+```
+
+---
+
+## 📌 Explanation of Key Components
+
+- **`Mutex`**: Ensures that only one thread can access the queue at a time.
+- **`Condvar`**:
+  - `not_full`: Used to block `push` when the queue is full.
+  - `not_empty`: Used to block `pop` when the queue is empty.
+- **`Arc`**: Allows multiple threads to share ownership of the queue.
+- **`wait()`**: Blocks the current thread until a `notify_one()` or `notify_all()` is called.
+- **`notify_one()`**: Wakes up one waiting thread.
+
+---
+
+## 🧠 Notes
+
+- This implementation is **blocking**, meaning threads will wait until the queue is in a state that allows them to proceed.
+- It's **not** suitable for high-performance applications due to the overhead of `Mutex` and `Condvar`.
+- For more advanced use cases, consider using `crossbeam` or `tokio` for better concurrency primitives.
+
+---
+
+## ✅ Summary
+
+This implementation provides a **thread-safe bounded queue** with blocking `push` and `pop` operations using Rust's standard concurrency primitives. It ensures that threads wait only when necessary, maintaining correctness and avoiding data races.

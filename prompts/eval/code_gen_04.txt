@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a JavaScript function that debounces another function, with a cancel method. Add JSDoc comments.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a C function that reverses a singly linked list in place. Include the struct definition and a small main() that tests it.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

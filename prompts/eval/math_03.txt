@@ -1,0 +1,8 @@
+<|im_start|>user
+Solve the system of equations: 2x + 3y = 13 and 5x - y = 7. Then check the solution.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

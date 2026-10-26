@@ -1,0 +1,101 @@
+Here's a Python implementation of **binary search**, followed by **five unit tests using `pytest`** that cover **edge cases**.
+
+---
+
+### ✅ Binary Search Implementation
+
+```python
+def binary_search(arr, target):
+    """
+    Perform binary search on a sorted array to find the index of a target value.
+
+    Args:
+        arr (list): A sorted list of elements.
+        target: The value to search for.
+
+    Returns:
+        int: The index of the target if found, otherwise -1.
+    """
+    left, right = 0, len(arr) - 1
+
+    while left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+
+    return -1
+```
+
+---
+
+### 🧪 Unit Tests with `pytest`
+
+First, make sure you have `pytest` installed:
+
+```bash
+pip install pytest
+```
+
+Then, create a file named `test_binary_search.py` with the following content:
+
+```python
+import pytest
+from binary_search import binary_search
+
+# Test 1: Target is at the beginning of the array
+def test_binary_search_found_at_start():
+    arr = [1, 2, 3, 4, 5]
+    assert binary_search(arr, 1) == 0
+
+# Test 2: Target is at the end of the array
+def test_binary_search_found_at_end():
+    arr = [1, 2, 3, 4, 5]
+    assert binary_search(arr, 5) == 4
+
+# Test 3: Target is not in the array
+def test_binary_search_not_found():
+    arr = [1, 2, 3, 4, 5]
+    assert binary_search(arr, 6) == -1
+
+# Test 4: Empty array
+def test_binary_search_empty_array():
+    arr = []
+    assert binary_search(arr, 1) == -1
+
+# Test 5: Single-element array
+def test_binary_search_single_element_found():
+    arr = [10]
+    assert binary_search(arr, 10) == 0
+
+def test_binary_search_single_element_not_found():
+    arr = [10]
+    assert binary_search(arr, 5) == -1
+```
+
+---
+
+### 🧪 How to Run the Tests
+
+Navigate to the directory containing `test_binary_search.py` and run:
+
+```bash
+pytest test_binary_search.py
+```
+
+---
+
+### ✅ Summary of Edge Cases Covered
+
+| Test Case | Description |
+|-----------|-------------|
+| 1 | Target is at the beginning of the array |
+| 2 | Target is at the end of the array |
+| 3 | Target is not in the array |
+| 4 | Empty array |
+| 5 | Single-element array (both found and not found) |
+
+Let me know if you'd like to add more tests or modify the implementation!

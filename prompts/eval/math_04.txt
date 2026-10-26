@@ -1,0 +1,8 @@
+<|im_start|>user
+A train travels 180 km at 60 km/h and returns at 90 km/h. What is the average speed for the whole trip? Explain why it is not 75 km/h.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

@@ -1,0 +1,8 @@
+<|im_start|>user
+Prove that the sum of the first n odd numbers is n squared.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

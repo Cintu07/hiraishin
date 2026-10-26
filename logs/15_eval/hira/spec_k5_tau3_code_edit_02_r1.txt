@@ -1,0 +1,42 @@
+To convert the callback-based `fetchUsers` function into an `async/await` version using `Promise.all`, we need to:
+
+1. Replace the `getUser` function with a `Promise` version.
+2. Use `Promise.all` to handle all the asynchronous requests in parallel.
+3. Ensure the order of the results matches the input order of `ids`.
+
+Here's the rewritten version:
+
+```javascript
+async function fetchUsers(ids) {
+  try {
+    const promises = ids.map(id => getUserPromise(id));
+    const users = await Promise.all(promises);
+    return users;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// Helper function to convert getUser into a Promise
+function getUserPromise(id) {
+  return new Promise((resolve, reject) => {
+    getUser(id, (err, user) => {
+      if (err) reject(err);
+      else resolve(user);
+    });
+  });
+}
+```
+
+### Explanation:
+
+- `getUserPromise(id)` wraps the original `getUser` function in a `Promise`.
+- `Promise.all(promises)` runs all the `getUser` calls in parallel.
+- `await Promise.all(...)` ensures that the results are returned in the same order as the input `ids`.
+- The `try/catch` block handles any errors that may occur during the fetch.
+
+### Note:
+
+Make sure that the `getUser` function is defined elsewhere in your code and behaves as expected. If `getUser` is not a function you control, you can replace it with a `fetch` or `axios` call, or any other method that returns a `Promise`.
+
+Let me know if you want to use `fetch` or `axios` instead of a custom `getUser` function!

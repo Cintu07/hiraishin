@@ -1,0 +1,8 @@
+<|im_start|>user
+Implement binary search in Python, then write five unit tests with pytest that cover edge cases.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

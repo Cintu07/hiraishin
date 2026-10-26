@@ -1,0 +1,90 @@
+We are given the function:
+
+$$
+f(x) = x^2 \sin(x)
+$$
+
+---
+
+### **Step 1: Find the derivative $ f'(x) $**
+
+We use the **product rule**, which states:
+
+$$
+\frac{d}{dx}[u(x)v(x)] = u'(x)v(x) + u(x)v'(x)
+$$
+
+Let:
+- $ u(x) = x^2 $
+- $ v(x) = \sin(x) $
+
+Then:
+- $ u'(x) = 2x $
+- $ v'(x) = \cos(x) $
+
+Apply the product rule:
+
+$$
+f'(x) = u'(x)v(x) + u(x)v'(x) = 2x \sin(x) + x^2 \cos(x)
+$$
+
+So the derivative is:
+
+$$
+f'(x) = 2x \sin(x) + x^2 \cos(x)
+$$
+
+---
+
+### **Step 2: Find the equation of the tangent line at $ x = 0 $**
+
+To find the equation of the tangent line at a point, we need:
+
+- The value of the function at $ x = 0 $: $ f(0) $
+- The value of the derivative at $ x = 0 $: $ f'(0) $
+
+#### **Evaluate $ f(0) $:**
+
+$$
+f(0) = (0)^2 \sin(0) = 0
+$$
+
+#### **Evaluate $ f'(0) $:**
+
+$$
+f'(0) = 2(0)\sin(0) + (0)^2 \cos(0) = 0 + 0 = 0
+$$
+
+So the slope of the tangent line at $ x = 0 $ is 0, and the point is $ (0, 0) $.
+
+#### **Equation of the tangent line:**
+
+Using the point-slope form:
+
+$$
+y - y_1 = m(x - x_1)
+$$
+
+Where:
+- $ (x_1, y_1) = (0, 0) $
+- $ m = 0 $
+
+So the equation is:
+
+$$
+y - 0 = 0(x - 0) \Rightarrow y = 0
+$$
+
+---
+
+### ✅ **Final Answers:**
+
+- **Derivative:**  
+  $$
+  f'(x) = 2x \sin(x) + x^2 \cos(x)
+  $$
+
+- **Equation of the tangent line at $ x = 0 $:**  
+  $$
+  y = 0
+  $$

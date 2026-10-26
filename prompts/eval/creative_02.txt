@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a poem about a city waking up in the rain, in free verse.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

@@ -1,0 +1,24 @@
+```json
+[
+  {
+    "owner": "Priya",
+    "task": "Documents the triggers",
+    "due": "Friday"
+  },
+  {
+    "owner": "Marco",
+    "task": "Writes the feature-freeze announcement",
+    "due": "Today"
+  },
+  {
+    "owner": "Lena",
+    "task": "Ships the cache fix",
+    "due": "Thursday"
+  },
+  {
+    "owner": "Lena",
+    "task": "Reports the new crash rate",
+    "due": "Next Tuesday"
+  }
+]
+```

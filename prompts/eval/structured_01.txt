@@ -1,0 +1,10 @@
+<|im_start|>user
+Extract every number from this text into a JSON array of objects with fields value, unit and meaning:
+
+The city's first electric tram line opened in 1898 and ran for 4.2 kilometres between the harbour and the central market. It used 12 cars, each seating 28 passengers, and drew power from an overhead wire at 550 volts. Within two years ridership reached 9,000 passengers a day, far above the 3,500 the planners had expected. The company responded by ordering 18 more cars and extending the line north to the university district in 1903. Fares were set at one penny for any distance, which made the tram popular with dock workers who lived on the hills above the port. By 1925 the network had grown to 31 kilometres and 6 routes, but competition from motor buses began to cut into its income. The last tram ran on 14 March 1957, and most of the track was paved over. A 600-metre heritage section near the market was restored in 1994 and now carries tourists on weekends.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

@@ -1,0 +1,53 @@
+To rewrite the given callback-based `fetchUsers` function using `async/await` and `Promise.all`, we need to:
+
+1. Convert the `getUser` function into a `Promise`.
+2. Use `Promise.all` to handle all the asynchronous requests in parallel.
+3. Ensure the order of the results matches the input order of `ids`.
+
+Here's the rewritten version:
+
+```javascript
+async function fetchUsers(ids) {
+  // Convert each getUser call to a Promise
+  const promises = ids.map(id => getUser(id));
+
+  try {
+    // Wait for all promises to resolve
+    const users = await Promise.all(promises);
+    return users;
+  } catch (err) {
+    // If any promise rejects, the catch block will handle it
+    throw err;
+  }
+}
+```
+
+### Explanation:
+
+- `getUser(id)` is assumed to be a function that returns a `Promise` (or can be wrapped in one).
+- `Promise.all` is used to run all the `getUser` calls in parallel.
+- `await` ensures that the function waits for all promises to resolve before returning the results.
+- If any `getUser` call rejects, the `catch` block will handle the error and re-throw it.
+
+### Example of `getUser` as a Promise:
+
+If `getUser` is not already a `Promise`, you can wrap it like this:
+
+```javascript
+function getUser(id) {
+  return new Promise((resolve, reject) => {
+    // Simulate an async call
+    setTimeout(() => {
+      if (id === 1) {
+        resolve({ id: 1, name: 'Alice' });
+      } else {
+        reject(new Error('User not found'));
+      }
+    }, 100);
+  });
+}
+```
+
+### Final Note:
+
+This version preserves the behavior of the original function, including the order of the results, and uses modern `async/await` and `Promise.all` for better readability and maintainability.

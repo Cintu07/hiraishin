@@ -1,0 +1,8 @@
+<|im_start|>user
+A shop sells pens at 3 for $2 and notebooks at $3.50 each. Sam buys 12 pens and some notebooks and pays $29. How many notebooks did Sam buy? Show your steps.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

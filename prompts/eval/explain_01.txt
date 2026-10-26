@@ -1,0 +1,8 @@
+<|im_start|>user
+Explain how a hash table handles collisions, comparing chaining and open addressing, with their trade-offs.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

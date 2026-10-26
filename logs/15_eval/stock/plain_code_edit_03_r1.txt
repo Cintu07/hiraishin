@@ -1,0 +1,77 @@
+Let's analyze the given C function and identify the bugs:
+
+---
+
+### **Original Code:**
+
+```c
+int find(int *a, int n, int x) {
+    for (int i = 0; i <= n; i++) {
+        if (a[i] = x) return i;
+    }
+    return -1;
+}
+```
+
+---
+
+### **Bug 1: Loop Condition**
+
+The loop is written as:
+
+```c
+for (int i = 0; i <= n; i++)
+```
+
+This is incorrect because the array `a` has `n` elements, and valid indices are from `0` to `n - 1`. So the loop should run while `i < n`, not `i <= n`.
+
+- **Bug:** `i <= n` → should be `i < n`
+
+---
+
+### **Bug 2: Assignment vs. Comparison**
+
+In the `if` statement:
+
+```c
+if (a[i] = x) return i;
+```
+
+This is an **assignment** (`=`), not a **comparison** (`==`). This will assign `x` to `a[i]`, and then evaluate the result (which is `x`) as a boolean. This is a **logical error** and will not work as intended.
+
+- **Bug:** `a[i] = x` → should be `a[i] == x`
+
+---
+
+### **Corrected Version:**
+
+```c
+int find(int *a, int n, int x) {
+    for (int i = 0; i < n; i++) {
+        if (a[i] == x) return i;
+    }
+    return -1;
+}
+```
+
+---
+
+### **Explanation of the Fix:**
+
+- Changed the loop condition from `i <= n` to `i < n` to avoid accessing out-of-bounds memory.
+- Changed the assignment operator `=` to the comparison operator `==` to correctly check if the element is equal to `x`.
+
+---
+
+### ✅ **Final Corrected Function:**
+
+```c
+int find(int *a, int n, int x) {
+    for (int i = 0; i < n; i++) {
+        if (a[i] == x) return i;
+    }
+    return -1;
+}
+```
+
+This function now correctly searches for the value `x` in the array `a` of size `n` and returns the index of the first occurrence, or `-1` if not found.

@@ -1,0 +1,8 @@
+<|im_start|>user
+Explain the difference between a process and a thread in an operating system, with examples of when to use each.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

@@ -1,0 +1,42 @@
+Here's the equivalent Python function using `asyncio` and `async/await`, while keeping the structure recognizable:
+
+```python
+import asyncio
+
+async def fetch_users(ids):
+    out = []
+    done = 0
+    tasks = []
+
+    for user_id in ids:
+        task = asyncio.create_task(get_user(user_id))
+        tasks.append(task)
+
+    for task in tasks:
+        try:
+            user = await task
+            out.append(user)
+            done += 1
+            if done == len(ids):
+                return out
+        except Exception as e:
+            return None  # Or handle error as needed
+
+    return out
+```
+
+### Notes:
+- `get_user(user_id)` is assumed to be an `async` function that returns a user or raises an exception.
+- This version uses `asyncio.create_task()` to schedule the `get_user` calls and `await` to collect results.
+- The loop checks if all tasks are done and returns the result once all users are fetched.
+- Error handling is simplified here — you can expand it to handle specific exceptions or pass errors to a callback if needed.
+
+### Example of `get_user` function:
+```python
+async def get_user(user_id):
+    # Simulate an async call (e.g., HTTP request)
+    await asyncio.sleep(0.1)
+    return {"id": user_id, "name": f"User {user_id}"}
+```
+
+Let me know if you want to include a callback-style interface or use `asyncio.gather()` for a more idiomatic approach.

@@ -1,0 +1,10 @@
+<|im_start|>user
+Extract the action items from these notes as JSON with fields owner, task and due:
+
+Notes from the Tuesday planning meeting. Priya said the payment service migration is two weeks behind because the old database schema has undocumented triggers. Marco proposed freezing new features on the checkout page until the migration lands, and the group agreed. Lena raised that the mobile app crash rate rose from 0.4% to 1.1% after the last release; she traced most crashes to the image cache and will ship a fix on Thursday. The team discussed hiring: one backend role is approved, the frontend role is still waiting on budget. Action items: Priya documents the triggers by Friday, Marco writes the feature-freeze announcement today, Lena ships the cache fix Thursday and reports the new crash rate next Tuesday.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

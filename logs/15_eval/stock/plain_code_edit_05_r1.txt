@@ -1,0 +1,53 @@
+Here's the equivalent Python function using `asyncio` and `async/await`, while keeping the structure recognizable:
+
+```python
+import asyncio
+
+async def fetch_users(ids):
+    out = []
+    done = 0
+    tasks = []
+
+    for user_id in ids:
+        task = asyncio.create_task(get_user(user_id))
+        tasks.append(task)
+
+    results = await asyncio.gather(*tasks)
+
+    for result in results:
+        if result[0] is not None:
+            out.append(result[0])
+        else:
+            # If an error occurs, we can raise it or handle it here
+            # For this example, we'll just log the error and continue
+            print(f"Error fetching user: {result[1]}")
+    
+    return out
+
+async def get_user(user_id):
+    # Simulate an async API call
+    await asyncio.sleep(0.1)
+    if user_id % 2 == 0:
+        return user_id, None  # Success
+    else:
+        return None, f"Error fetching user {user_id}"
+```
+
+### Explanation:
+
+- `fetch_users` is an `async` function that uses `asyncio.create_task` to create tasks for each user ID.
+- `asyncio.gather(*tasks)` is used to await all tasks and collect their results.
+- Each result is a tuple `(user, error)` — if `user` is not `None`, it's added to the output list.
+- If an error occurs, it's logged and the function continues.
+
+### Usage Example:
+
+```python
+async def main():
+    users = await fetch_users([1, 2, 3, 4])
+    print(users)
+
+asyncio.run(main())
+```
+
+This version keeps the structure similar to the original JavaScript function while using Python's `asyncio` for asynchronous behavior.

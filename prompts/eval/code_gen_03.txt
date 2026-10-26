@@ -1,0 +1,8 @@
+<|im_start|>user
+Implement a thread-safe bounded queue in Rust with push and pop methods that block when full or empty. Explain the design briefly.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

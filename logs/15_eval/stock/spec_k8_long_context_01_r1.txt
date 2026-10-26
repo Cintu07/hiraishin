@@ -1,0 +1,48 @@
+### **Four Causes of Non-Lossless Verification and Their Fixes**
+
+Here is a summary of the **four causes** of non-lossless verification in the speculative decoding setup, along with the **file or patch** that fixes each:
+
+---
+
+### **1. Cause: MMVQ K-split (nwarps) changes with column count, and Q6_K/Q4_K switch to MMQ at 6-8 columns**
+
+- **Evidence**: The `mmvq.cu` code shows that the K-split (nwarps) changes with the number of columns, and the Q6_K/Q4_K models switch to MMQ (multi-matrix quantization) at 6-8 columns.
+- **Impact**: This leads to inconsistent behavior in the kernel, causing loss of precision in the speculative decoding.
+- **Fix**: **Patch 0001** (part of the `hiraishin` branch) ensures that the kernel behavior is consistent across different column counts, maintaining lossless verification.
+
+---
+
+### **2. Cause: Flash-Attention kernel choice (vec vs others) for B > 1**
+
+- **Evidence**: The stock llama.cpp uses different flash-attention kernels for B > 1, leading to bit-exact mismatches.
+- **Impact**: The kernel choice affects the precision of the attention computation, causing loss of exactness in the speculative decoding.
+- **Fix**: **Patch 0003** (part of the `hiraishin` branch) forces the use of the `vec` kernel for all B > 1, ensuring consistent and lossless computation.
+
+---
+
+### **3. Cause: `n_kv = pad(pos+1, 256)` causes different KV lengths across verify batches**
+
+- **Evidence**: The `n_kv` is padded to the nearest multiple of 256, leading to different KV lengths when a batch crosses a multiple of 256.
+- **Impact**: This padding causes the KV cache to be misaligned, leading to loss of exactness in the speculative decoding.
+- **Fix**: **KV_PAD guard** (a configuration flag) ensures that the KV length is consistent across all batches, preventing this issue.
+
+---
+
+### **4. Cause: `parallel_blocks` in vec FA kernel comes from kernel occupancy, which differs between 1- and 2-query kernels**
+
+- **Evidence**: The `parallel_blocks` in the vec FA kernel is determined by kernel occupancy, which differs between 1- and 2-query kernels, leading to inconsistencies.
+- **Impact**: This causes the kernel to behave differently for different query counts, leading to loss of exactness in the speculative decoding.
+- **Fix**: **Patch 0004** (part of the `hiraishin` branch) updates the BI (batch-invariant) kernel to use a fixed number of blocks per SM, ensuring consistent behavior and lossless verification.
+
+---
+
+### **Summary of Fixes**
+
+| Cause | File/Code | Fix |
+|-------|-----------|-----|
+| MMVQ K-split changes with column count | `mmvq.cu` | **Patch 0001** |
+| Flash-Attention kernel choice (vec vs others) for B > 1 | `flash_attention.cu` | **Patch 0003** |
+| `n_kv = pad(pos+1, 256)` causes different KV lengths | `ggml.cu` | **KV_PAD guard** |
+| `parallel_blocks` from kernel occupancy differs between 1- and 2-query kernels | `flash_attention.cu` | **Patch 0004** |
+
+These four fixes, along with the use of `GGML_CUDA_BATCH_INVARIANT=1`, ensure **lossless verification** and **bit-identical logits** in the speculative decoding setup.

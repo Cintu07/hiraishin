@@ -1,0 +1,23 @@
+<|im_start|>user
+Translate this JavaScript function to Python with asyncio, keeping the structure recognizable:
+
+```javascript
+function fetchUsers(ids, cb) {
+  var out = [];
+  var done = 0;
+  for (var i = 0; i < ids.length; i++) {
+    getUser(ids[i], function (err, user) {
+      if (err) { cb(err); return; }
+      out.push(user);
+      done++;
+      if (done == ids.length) cb(null, out);
+    });
+  }
+}
+```<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

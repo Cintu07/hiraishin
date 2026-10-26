@@ -1,0 +1,104 @@
+This C++ code is part of a **speculative decoding harness** for a large language model (LLM), likely based on the **llama.cpp** project (a C++ implementation of the LLaMA model). The code is designed to **benchmark and test various decoding strategies**, including greedy decoding, speculative decoding, and batch processing, while measuring performance and correctness.
+
+---
+
+## 🔍 **Overview of the Code**
+
+This code is a **harness** for evaluating different decoding strategies in a large language model. It:
+
+- Parses command-line arguments.
+- Loads a model and its vocabulary.
+- Tokenizes prompts.
+- Performs **prefilling** (initial token generation).
+- Performs **decoding** (generating subsequent tokens).
+- Measures **timing** and **performance**.
+- Outputs results in **JSON format** for each run.
+
+---
+
+## 🧩 **Function-by-Function Explanation**
+
+---
+
+### 1. **`ms_since(clk::time_point t0)`**
+
+```cpp
+static double ms_since(clk::time_point t0) {
+    return std::chrono::duration<double, std::milli>(clk::now() - t0).count();
+}
+```
+
+- **Purpose**: Computes the number of milliseconds elapsed since a given time point.
+- **Usage**: Used to measure the time taken for decoding operations.
+- **Note**: Uses `std::chrono::steady_clock` for timing, which is suitable for measuring durations.
+
+---
+
+### 2. **`args_t` struct**
+
+```cpp
+struct args_t {
+    std::string target, draft, out = "harness_out";
+    std::vector<std::string> prompts;
+    std::vector<int> ks = {2, 4, 8};
+    std::vector<float> taus = {0.0f};
+    std::vector<int> ngrams = {0};
+    int ng_cooldown = 0;
+    std::vector<int> pad_verifies = {0};
+    std::vector<int> inv_bs = {2, 3, 5, 9};
+    int n_predict = 256, n_ctx = 2048, reps = 1;
+    bool verify_cost = true, invariance = true, pad_guard = true, draft_probe = false, draft_b2 = true;
+};
+```
+
+- **Purpose**: Stores command-line arguments and configuration parameters.
+- **Fields**:
+  - `target`: Path to the main model file.
+  - `draft`: Path to the draft model (used for speculative decoding).
+  - `prompts`: List of input prompts.
+  - `ks`: List of values for `k` in top-k sampling.
+  - `taus`: List of values for `tau` in top-p sampling.
+  - `ngrams`: List of n-gram values for repetition penalty.
+  - `ng_cooldown`: Cooldown period for n-gram penalty.
+  - `pad_verifies`: List of padding verification values.
+  - `inv_bs`: List of batch sizes for invariance checks.
+  - `n_predict`: Number of tokens to predict.
+  - `n_ctx`: Context size.
+  - `reps`: Number of repetitions for benchmarking.
+  - `verify_cost`: Whether to verify cost.
+  - `invariance`: Whether to check batch invariance.
+  - `pad_guard`: Whether to enable padding guard.
+  - `draft_probe`: Whether to probe draft model.
+  - `draft_b2`: Whether to use draft model for speculative decoding.
+
+---
+
+### 3. **`parse_list(const char * s)`**
+
+```cpp
+static std::vector<int> parse_list(const char * s) {
+    std::vector<int> v;
+    std::stringstream ss(s);
+    std::string x;
+    while (std::getline(ss, x, ',')) v.push_back(std::atoi(x.c_str()));
+    return v;
+}
+```
+
+- **Purpose**: Parses a comma-separated string into a list of integers.
+- **Usage**: Used to parse command-line arguments like `--k 2,4,8`.
+
+---
+
+### 4. **`parse(int argc, char ** argv)`**
+
+```cpp
+static args_t parse(int argc, char ** argv) {
+    args_t a;
+    for (int i = 1; i < argc; i++) {
+        std::string k = argv[i];
+        auto next = [&]() { if (i + 1 >= argc) { fprintf(stderr, "missing value for %s\n", k.c_str()); exit(1); } return argv[++i]; };
+        if      (k == "-m")      a.target = next();
+        else if (k == "-md")     a.draft = next();
+        else if (k == "-f")      a.prompts.push_back(next());
+        else if (k == "-n")      a.n_predict = std::atoi(next());

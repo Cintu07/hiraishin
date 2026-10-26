@@ -1,0 +1,8 @@
+| Person | Topic | Action | Deadline |
+|--------|-------|--------|----------|
+| Priya | Payment service migration delay | Documents the undocumented triggers | Friday |
+| Marco | Feature freeze on checkout page | Writes the feature-freeze announcement | Today |
+| Lena | Mobile app crash rate increase | Ships the cache fix | Thursday |
+| Lena | Mobile app crash rate increase | Reports the new crash rate | Next Tuesday |
+| Team | Hiring | Backend role approved | - |
+| Team | Hiring | Frontend role pending budget | - |

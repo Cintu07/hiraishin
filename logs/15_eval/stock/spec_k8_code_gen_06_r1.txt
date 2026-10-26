@@ -1,0 +1,139 @@
+Here's a complete Go HTTP server that includes:
+
+- Two endpoints:
+  - `GET /health` — returns a simple health check response.
+  - `POST /echo` — returns the JSON body it receives.
+- Graceful shutdown support (using `SIGINT` and `SIGTERM` signals).
+
+---
+
+### ✅ Go HTTP Server with Health Check and Echo Endpoint
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+)
+
+// HealthCheckResponse is the response for the /health endpoint
+type HealthCheckResponse struct {
+	Status string `json:"status"`
+}
+
+// EchoResponse is the response for the /echo endpoint
+type EchoResponse struct {
+	Message string `json:"message"`
+}
+
+func main() {
+	// Create a new HTTP server
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: setupRoutes(),
+	}
+
+	// Handle shutdown signals
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start the server in a goroutine
+	go func() {
+		fmt.Println("Server started on :8080")
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Printf("Server failed to start: %v\n", err)
+			os.Exit(1)
+		}
+	}()
+
+	// Wait for shutdown signal
+	<-stopChan
+	fmt.Println("Shutting down server...")
+
+	// Graceful shutdown
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		fmt.Printf("Server shutdown failed: %v\n", err)
+	}
+
+	fmt.Println("Server shutdown complete")
+}
+
+// setupRoutes defines the routes for the server
+func setupRoutes() http.Handler {
+	mux := http.NewServeMux()
+
+	// Health check endpoint
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		resp := HealthCheckResponse{Status: "ok"}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	})
+
+	// Echo endpoint
+	mux.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		var body map[string]interface{}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			http.Error(w, "Invalid JSON body", http.StatusBadRequest)
+			return
+		}
+
+		resp := EchoResponse{Message: fmt.Sprintf("%v", body)}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+	})
+
+	return mux
+}
+```
+
+---
+
+### 📌 How to Run
+
+1. Save the code to a file, e.g., `main.go`.
+2. Run the server:
+
+```bash
+go run main.go
+```
+
+3. Test the endpoints:
+
+- **Health Check**:
+  ```bash
+  curl http://localhost:8080/health
+  ```
+
+- **Echo**:
+  ```bash
+  curl -X POST -H "Content-Type: application/json" -d '{"key": "value"}' http://localhost:8080/echo
+  ```
+
+---
+
+### 🚫 Notes
+
+- The server listens on port `8080`.
+- Graceful shutdown waits up to 5 seconds for active requests to complete before shutting down.
+- The `/echo` endpoint returns the full JSON body as a string in the `message` field.
+
+Let me know if you want to add logging, rate limiting, or other features!

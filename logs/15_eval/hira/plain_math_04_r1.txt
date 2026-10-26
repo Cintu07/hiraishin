@@ -1,0 +1,71 @@
+To find the **average speed** for the entire trip, we need to use the formula for **average speed**, which is:
+
+$$
+\text{Average speed} = \frac{\text{Total distance}}{\text{Total time}}
+$$
+
+---
+
+### Step 1: Calculate the total distance
+
+The train travels **180 km** to a destination and then **180 km** back, so:
+
+$$
+\text{Total distance} = 180 + 180 = 360 \text{ km}
+$$
+
+---
+
+### Step 2: Calculate the time taken for each leg of the trip
+
+- **Outbound trip (180 km at 60 km/h):**
+
+$$
+\text{Time} = \frac{\text{Distance}}{\text{Speed}} = \frac{180}{60} = 3 \text{ hours}
+$$
+
+- **Return trip (180 km at 90 km/h):**
+
+$$
+\text{Time} = \frac{180}{90} = 2 \text{ hours}
+$$
+
+---
+
+### Step 3: Calculate total time
+
+$$
+\text{Total time} = 3 + 2 = 5 \text{ hours}
+$$
+
+---
+
+### Step 4: Calculate average speed
+
+$$
+\text{Average speed} = \frac{360}{5} = 72 \text{ km/h}
+$$
+
+---
+
+### Why is the average speed **not 75 km/h**?
+
+You might think to just average the two speeds:
+
+$$
+\frac{60 + 90}{2} = 75 \text{ km/h}
+$$
+
+But this is **not** the correct way to calculate average speed when the **distances are the same** but the **speeds are different**.
+
+The **average speed** is not the arithmetic mean of the two speeds, because the time spent at each speed is different. The train spends more time traveling at the slower speed (60 km/h), so the average speed is **weighted** more toward the slower speed.
+
+---
+
+### Final Answer:
+
+$$
+\boxed{72 \text{ km/h}}
+$$
+
+The average speed is **not 75 km/h** because average speed is calculated based on **total distance divided by total time**, not the simple average of the two speeds.

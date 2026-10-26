@@ -1,0 +1,8 @@
+<|im_start|>user
+Create a JSON object describing a fictional laptop with fields brand, model, cpu, gpu, ram_gb, storage_gb, price_usd and a list of ports. Then write a JSON Schema that validates it.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

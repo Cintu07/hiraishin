@@ -1,0 +1,213 @@
+<|im_start|>user
+Here is part of a C++ program:
+
+```cpp
+// hiraishin step 1 harness: plain greedy decode, chain speculative decode with per-cycle timing,
+// verify-cost vs batch size, and a batch-invariance check. Built against llama.cpp (PrismML fork e8fd209).
+//
+// Every number this prints comes from llama_synchronize()-bounded wall clock timers.
+// Output: one JSON object per line on stdout; token ids and text per run under --out.
+
+#include "llama.h"
+#include "ggml-backend.h"
+
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+using clk = std::chrono::steady_clock;
+static double ms_since(clk::time_point t0) {
+    return std::chrono::duration<double, std::milli>(clk::now() - t0).count();
+}
+
+struct args_t {
+    std::string target, draft, out = "harness_out";
+    std::vector<std::string> prompts;
+    std::vector<int> ks = {2, 4, 8};
+    std::vector<float> taus = {0.0f};
+    std::vector<int> ngrams = {0};
+    int ng_cooldown = 0;
+    std::vector<int> pad_verifies = {0};
+    std::vector<int> inv_bs = {2, 3, 5, 9};
+    int n_predict = 256, n_ctx = 2048, reps = 1;
+    bool verify_cost = true, invariance = true, pad_guard = true, draft_probe = false, draft_b2 = true;
+};
+
+static std::vector<int> parse_list(const char * s) {
+    std::vector<int> v;
+    std::stringstream ss(s);
+    std::string x;
+    while (std::getline(ss, x, ',')) v.push_back(std::atoi(x.c_str()));
+    return v;
+}
+
+static args_t parse(int argc, char ** argv) {
+    args_t a;
+    for (int i = 1; i < argc; i++) {
+        std::string k = argv[i];
+        auto next = [&]() { if (i + 1 >= argc) { fprintf(stderr, "missing value for %s\n", k.c_str()); exit(1); } return argv[++i]; };
+        if      (k == "-m")      a.target = next();
+        else if (k == "-md")     a.draft = next();
+        else if (k == "-f")      a.prompts.push_back(next());
+        else if (k == "-n")      a.n_predict = std::atoi(next());
+        else if (k == "-c")      a.n_ctx = std::atoi(next());
+        else if (k == "-k")      a.ks = parse_list(next());
+        else if (k == "--inv-b") a.inv_bs = parse_list(next());
+        else if (k == "--tau") {
+            a.taus.clear();
+            std::stringstream ss(next());
+            std::string x;
+            while (std::getline(ss, x, ',')) a.taus.push_back(std::strtof(x.c_str(), nullptr));
+        }
+        else if (k == "--reps")  a.reps = std::atoi(next());
+        else if (k == "--out")   a.out = next();
+        else if (k == "--no-verify-cost") a.verify_cost = false;
+        else if (k == "--no-invariance")  a.invariance = false;
+        else if (k == "--no-pad-guard")   a.pad_guard = false;
+        else if (k == "--draft-probe")    a.draft_probe = true;
+        else if (k == "--no-draft-b2")    a.draft_b2 = false;
+        else if (k == "--ngram")          a.ngrams = parse_list(next());
+        else if (k == "--ng-cooldown")    a.ng_cooldown = std::atoi(next());
+        else if (k == "--pad-verify")     a.pad_verifies = parse_list(next());
+        else { fprintf(stderr, "unknown arg %s\n", k.c_str()); exit(1); }
+    }
+    if (a.target.empty() || a.prompts.empty()) {
+        fprintf(stderr, "usage: spec_harness -m target.gguf [-md draft.gguf] -f prompt.txt [-f ...] [-n 256] [-k 2,4,8] [--out dir]\n");
+        exit(1);
+    }
+    return a;
+}
+
+// same as llama.cpp common -f: read file, drop exactly one trailing '\n'
+static std::string read_prompt(const std::string & path) {
+    std::ifstream f(path, std::ios::binary);
+    std::string s((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+    if (!s.empty() && s.back() == '\n') s.pop_back();
+    return s;
+}
+
+static std::string basename_noext(const std::string & p) {
+    size_t a = p.find_last_of("/\\");
+    std::string b = a == std::string::npos ? p : p.substr(a + 1);
+    size_t d = b.rfind('.');
+    return d == std::string::npos ? b : b.substr(0, d);
+}
+
+struct model_t {
+    llama_model * model = nullptr;
+    llama_context * ctx = nullptr;
+    const llama_vocab * vocab = nullptr;
+    int n_vocab = 0;
+    llama_batch batch{};
+    llama_memory_t mem() const { return llama_get_memory(ctx); }
+};
+
+static model_t load(const std::string & path, int n_ctx) {
+    model_t m;
+    auto mp = llama_model_default_params();
+    mp.n_gpu_layers = 999;
+    m.model = llama_model_load_from_file(path.c_str(), mp);
+    if (!m.model) { fprintf(stderr, "failed to load %s\n", path.c_str()); exit(1); }
+    auto cp = llama_context_default_params();
+    cp.n_ctx = n_ctx;
+    cp.n_batch = n_ctx;
+    cp.n_ubatch = 512;
+    cp.n_seq_max = 1;
+    cp.flash_attn_type = LLAMA_FLASH_ATTN_TYPE_ENABLED;
+    cp.no_perf = true;
+    m.ctx = llama_init_from_model(m.model, cp);
+    if (!m.ctx) { fprintf(stderr, "failed to create context for %s\n", path.c_str()); exit(1); }
+    m.vocab = llama_model_get_vocab(m.model);
+    m.n_vocab = llama_vocab_n_tokens(m.vocab);
+    m.batch = llama_batch_init(n_ctx, 0, 1);
+    return m;
+}
+
+// decode toks at positions [pos0, pos0+n); logits for all positions if all_logits, else only the last.
+// returns wall ms including llama_synchronize (so the GPU work is complete).
+static double decode(model_t & m, const llama_token * toks, int n, int pos0, bool all_logits) {
+    llama_batch & b = m.batch;
+    b.n_tokens = n;
+    for (int i = 0; i < n; i++) {
+        b.token[i] = toks[i];
+        b.pos[i] = pos0 + i;
+        b.n_seq_id[i] = 1;
+        b.seq_id[i][0] = 0;
+        b.logits[i] = all_logits || i == n - 1;
+    }
+    auto t0 = clk::now();
+    int rc = llama_decode(m.ctx, b);
+    llama_synchronize(m.ctx);
+    double t = ms_since(t0);
+    if (rc != 0) { fprintf(stderr, "llama_decode rc=%d (n=%d pos0=%d)\n", rc, n, pos0); exit(1); }
+    return t;
+}
+
+struct top2 { llama_token id; float l1, l2; };
+
+// first index of the maximum, same tie rule as llama_sampler_greedy
+static top2 argmax2(const float * l, int n) {
+    int best = 0;
+    float b1 = l[0], b2 = -INFINITY;
+    for (int i = 1; i < n; i++) {
+        if (l[i] > b1) { b2 = b1; b1 = l[i]; best = i; }
+        else if (l[i] > b2) { b2 = l[i]; }
+    }
+    return {best, b1, b2};
+}
+
+static std::vector<llama_token> tokenize(const model_t & m, const std::string & s) {
+    std::vector<llama_token> t(s.size() + 16);
+    int n = llama_tokenize(m.vocab, s.c_str(), (int) s.size(), t.data(), (int) t.size(), true, true);
+    if (n < 0) { t.resize(-n); n = llama_tokenize(m.vocab, s.c_str(), (int) s.size(), t.data(), (int) t.size(), true, true); }
+    t.resize(n);
+    return t;
+}
+
+static std::string detok(const model_t & m, const std::vector<llama_token> & ts) {
+    std::string out;
+    char buf[256];
+    for (auto t : ts) {
+        int n = llama_token_to_piece(m.vocab, t, buf, sizeof(buf), 0, false);
+        if (n > 0) out.append(buf, n);
+    }
+    return out;
+}
+
+static void write_run(const args_t & a, const std::string & tag, const model_t & m, const std::vector<llama_token> & ts) {
+    {
+        std::ofstream f(a.out + "/" + tag + ".ids");
+        for (auto t : ts) f << t << "\n";
+    }
+    std::ofstream f(a.out + "/" + tag + ".txt", std::ios::binary);
+    f << detok(m, ts);
+}
+
+static double median(std::vector<double> v) {
+    std::sort(v.begin(), v.end());
+    return v.empty() ? 0 : v[v.size() / 2];
+}
+
+// process the prompt in one batch (as llama-completion does) and return argmax of the last position
+static top2 prefill(model_t & m, const std::vector<llama_token> & p) {
+    llama_memory_clear(m.mem(), true);
+    decode(m, p.data(), (int) p.size(), 0, false);
+    return argmax2(llama_get_logits_ith(m.ctx, -1), m.n_vocab);
+}
+
+```
+
+Review this code: list possible bugs, edge cases and improvements.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

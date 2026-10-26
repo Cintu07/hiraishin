@@ -1,0 +1,17 @@
+<|im_start|>user
+Find and fix the bugs in this C function, then show the corrected version:
+
+```c
+int find(int *a, int n, int x) {
+    for (int i = 0; i <= n; i++) {
+        if (a[i] = x) return i;
+    }
+    return -1;
+}
+```<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a Go HTTP server with two endpoints, GET /health and POST /echo, that returns the JSON body it receives. Include graceful shutdown.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

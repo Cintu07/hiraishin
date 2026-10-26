@@ -1,0 +1,78 @@
+We are given the system of equations:
+
+$$
+\begin{cases}
+2x + 3y = 13 \quad \text{(1)} \\
+5x - y = 7 \quad \text{(2)}
+\end{cases}
+$$
+
+---
+
+### **Step 1: Solve the system using substitution or elimination**
+
+Let's use **elimination**.
+
+From equation (2):  
+$$
+5x - y = 7
+$$
+
+Solve for $ y $:
+
+$$
+y = 5x - 7 \quad \text{(3)}
+$$
+
+Now substitute equation (3) into equation (1):
+
+$$
+2x + 3(5x - 7) = 13
+$$
+
+Simplify:
+
+$$
+2x + 15x - 21 = 13
+$$
+$$
+17x - 21 = 13
+$$
+$$
+17x = 34
+$$
+$$
+x = 2
+$$
+
+Now substitute $ x = 2 $ into equation (3):
+
+$$
+y = 5(2) - 7 = 10 - 7 = 3
+$$
+
+---
+
+### **Step 2: Check the solution**
+
+Plug $ x = 2 $, $ y = 3 $ into both original equations:
+
+- Equation (1):  
+$$
+2(2) + 3(3) = 4 + 9 = 13 \quad \text{✓}
+$$
+
+- Equation (2):  
+$$
+5(2) - 3 = 10 - 3 = 7 \quad \text{✓}
+$$
+
+---
+
+### ✅ **Final Answer:**
+
+$$
+\boxed{(x, y) = (2, 3)}
+$$
+
+Both equations are satisfied, so the solution is correct.

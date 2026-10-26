@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a product description for a reusable water bottle aimed at hikers, in an energetic tone.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

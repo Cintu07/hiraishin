@@ -1,0 +1,10 @@
+<|im_start|>user
+Summarize the following text in two sentences, then list three questions a student might ask about it:
+
+Enzymes speed up chemical reactions by lowering the activation energy needed for the reaction to proceed. Each enzyme has an active site, a pocket whose shape and chemical properties match a particular substrate. When the substrate binds, the enzyme can strain chemical bonds, bring reacting groups close together, or provide a temporary chemical partner, all of which make the reaction easier. Enzymes are not used up, so a single molecule can process thousands of substrate molecules per second. Their activity depends strongly on temperature and pH: most human enzymes work best near 37 degrees Celsius and lose their shape, or denature, at much higher temperatures. Inhibitors can slow enzymes down, either by competing with the substrate for the active site or by binding elsewhere and changing the enzyme's shape. Many drugs work this way.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

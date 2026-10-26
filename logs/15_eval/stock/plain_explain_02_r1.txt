@@ -1,0 +1,26 @@
+Great question! Let's break it down in a way that's easy to understand, like a puzzle with pieces that fit together.
+
+### Why is the sky blue?
+
+Imagine the Earth is surrounded by a big, invisible blanket called the **atmosphere**. This blanket is made up of gases like nitrogen, oxygen, and tiny particles of dust and water. When sunlight comes from the Sun, it's actually a mix of all the colors of the rainbow — red, orange, yellow, green, blue, indigo, and violet.
+
+Now, sunlight is like a beam of light that travels through space and hits the Earth. When it enters the atmosphere, the light starts to interact with the air molecules and tiny particles. These particles are much smaller than the wavelength of light, so they scatter the light in all directions.
+
+Here's the key part: **shorter wavelengths of light (like blue and violet) are scattered more than longer wavelengths (like red and yellow)**. This is called **Rayleigh scattering**.
+
+So, even though violet light is scattered the most, our eyes are more sensitive to blue light, and there's a little more blue light in the sunlight. That's why the sky looks **blue** to us during the day.
+
+### Why are sunsets red?
+
+Now, let's think about what happens when the Sun is near the horizon — like during sunrise or sunset. At that time, the sunlight has to travel through **much more of the Earth's atmosphere** to reach your eyes.
+
+Because the light has to go through more air, the **shorter wavelengths (blue and violet) get scattered out of the direct path** of the sunlight. That means the blue light is scattered away, and the **longer wavelengths (red, orange, and yellow)** are left to travel straight to your eyes.
+
+So, when you look at the Sun during a sunset, you're seeing the **red and orange light** that has survived the long journey through the atmosphere. That's why the sky turns red or orange during sunset.
+
+### Summary
+
+- **Blue sky**: Shorter wavelengths (blue/violet) are scattered more by the atmosphere, and blue is more visible to our eyes.
+- **Red sunsets**: Light travels through more atmosphere at sunset, scattering out the blue light and leaving red/orange light to reach our eyes.
+
+It's like the atmosphere is acting like a filter, changing the colors of the light depending on how far it has to travel. Cool, right? 🌅

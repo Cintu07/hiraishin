@@ -1,0 +1,66 @@
+We are told:
+
+- Pens are sold at **3 for $2**.
+- Notebooks are sold at **$3.50 each**.
+- Sam buys **12 pens** and **some notebooks**.
+- Sam pays **$29** in total.
+
+We are to find **how many notebooks Sam bought**.
+
+---
+
+### Step 1: Calculate the cost of the pens
+
+Pens are sold at **3 for $2**, so the cost per pen is:
+
+$$
+\frac{2}{3} \text{ dollars per pen}
+$$
+
+Sam buys **12 pens**, so the total cost of the pens is:
+
+$$
+12 \times \frac{2}{3} = \frac{24}{3} = 8 \text{ dollars}
+$$
+
+---
+
+### Step 2: Let the number of notebooks be $ x $
+
+Each notebook costs **$3.50**, so the total cost of the notebooks is:
+
+$$
+3.50x
+$$
+
+---
+
+### Step 3: Set up the total cost equation
+
+Total cost = cost of pens + cost of notebooks
+
+$$
+8 + 3.50x = 29
+$$
+
+---
+
+### Step 4: Solve for $ x $
+
+$$
+3.50x = 29 - 8 = 21
+$$
+
+$$
+x = \frac{21}{3.50} = 6
+$$
+
+---
+
+### ✅ Final Answer:
+
+$$
+\boxed{6}
+$$
+
+Sam bought **6 notebooks**.

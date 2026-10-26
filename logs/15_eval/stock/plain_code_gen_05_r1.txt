@@ -1,0 +1,95 @@
+Here's a SQL schema for a small library system, along with three example queries:
+
+---
+
+### ✅ **SQL Schema**
+
+```sql
+CREATE TABLE IF NOT EXISTS Members (
+    member_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    joined_date DATE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS Books (
+    book_id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    author VARCHAR(100) NOT NULL,
+    publication_year INT NOT NULL,
+    available BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS Loans (
+    loan_id INT PRIMARY KEY AUTO_INCREMENT,
+    member_id INT NOT NULL,
+    book_id INT NOT NULL,
+    loan_date DATE NOT NULL,
+    return_date DATE,
+    FOREIGN KEY (member_id) REFERENCES Members(member_id),
+    FOREIGN KEY (book_id) REFERENCES Books(book_id)
+);
+```
+
+---
+
+### ✅ **Example Queries**
+
+#### 1. **Overdue Loans**
+Find all loans that are overdue (i.e., the return date is in the past and not yet returned).
+
+```sql
+SELECT 
+    l.loan_id,
+    m.name AS member_name,
+    b.title AS book_title,
+    l.loan_date,
+    l.return_date
+FROM Loans l
+JOIN Members m ON l.member_id = m.member_id
+JOIN Books b ON l.book_id = b.book_id
+WHERE l.return_date < CURDATE() AND l.return_date IS NOT NULL;
+```
+
+---
+
+#### 2. **Most Borrowed Books**
+Find the book(s) that have been borrowed the most.
+
+```sql
+SELECT 
+    b.title,
+    COUNT(*) AS total_loans
+FROM Loans l
+JOIN Books b ON l.book_id = b.book_id
+GROUP BY b.book_id
+ORDER BY total_loans DESC
+LIMIT 1;
+```
+
+---
+
+#### 3. **Members with No Loans**
+Find members who have never borrowed any books.
+
+```sql
+SELECT 
+    m.member_id,
+    m.name,
+    m.email
+FROM Members m
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM Loans l
+    WHERE l.member_id = m.member_id
+);
+```
+
+---
+
+### 📌 Notes:
+- This schema assumes the use of MySQL (due to `AUTO_INCREMENT` and `CURDATE()`).
+- You can adapt the schema for PostgreSQL or other databases by changing the syntax (e.g., `SERIAL` instead of `AUTO_INCREMENT`, `CURRENT_DATE` instead of `CURDATE()`).
+- The `available` field in the `Books` table is used to track whether a book is currently available for loan.
+
+Let me know if you'd like to add more features like reservations, fines, or book categories!

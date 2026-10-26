@@ -1,0 +1,93 @@
+Here is the extracted data in the requested format, with each number represented as an object in a JSON array, including its `value`, `unit`, and `meaning`:
+
+```json
+[
+  {
+    "value": 1898,
+    "unit": "",
+    "meaning": "The year the city's first electric tram line opened."
+  },
+  {
+    "value": 4.2,
+    "unit": "kilometres",
+    "meaning": "The length of the first electric tram line."
+  },
+  {
+    "value": 12,
+    "unit": "",
+    "meaning": "The number of cars used on the first electric tram line."
+  },
+  {
+    "value": 28,
+    "unit": "",
+    "meaning": "The number of passengers each car could seat."
+  },
+  {
+    "value": 550,
+    "unit": "volts",
+    "meaning": "The voltage used to power the tram from the overhead wire."
+  },
+  {
+    "value": 9000,
+    "unit": "passengers",
+    "unit": "a day",
+    "meaning": "The number of passengers using the tram within two years."
+  },
+  {
+    "value": 3500,
+    "unit": "passengers",
+    "unit": "a day",
+    "meaning": "The number of passengers the planners had expected."
+  },
+  {
+    "value": 18,
+    "unit": "",
+    "meaning": "The number of additional cars ordered by the company."
+  },
+  {
+    "value": 1903,
+    "unit": "",
+    "meaning": "The year the tram line was extended north to the university district."
+  },
+  {
+    "value": 1,
+    "unit": "penny",
+    "meaning": "The fare set for any distance on the tram."
+  },
+  {
+    "value": 31,
+    "unit": "kilometres",
+    "meaning": "The length of the tram network by 1925."
+  },
+  {
+    "value": 6,
+    "unit": "",
+    "meaning": "The number of routes in the tram network by 1925."
+  },
+  {
+    "value": 1957,
+    "unit": "",
+    "meaning": "The year the last tram ran."
+  },
+  {
+    "value": 14,
+    "unit": "March",
+    "meaning": "The month and day the last tram ran."
+  },
+  {
+    "value": 600,
+    "unit": "metres",
+    "meaning": "The length of the heritage section restored near the market."
+  },
+  {
+    "value": 1994,
+    "unit": "",
+    "meaning": "The year the heritage section was restored."
+  }
+]
+```
+
+### Notes:
+- For the entry with `9000 passengers a day`, the `unit` field is repeated to capture both the quantity and the time frame.
+- The date `14 March 1957` is split into `value` and `unit` to represent the day and month separately.
+- The `unit` field is left empty for values that don't have a unit (e.g., years, numbers of cars, etc.).

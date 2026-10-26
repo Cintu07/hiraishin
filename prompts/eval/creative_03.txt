@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a polite but firm email to a landlord asking for a broken heater to be repaired this week.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

@@ -1,0 +1,8 @@
+<|im_start|>user
+Write a YAML configuration for a web service with a database, a cache and two worker queues, and comment every field.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

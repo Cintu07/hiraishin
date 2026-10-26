@@ -1,0 +1,85 @@
+Inflation is the rate at which the general level of prices for goods and services is rising, and, consequently, the purchasing power of currency is falling. It is typically measured as a percentage change in a price index, such as the Consumer Price Index (CPI), over a specific period, usually a year.
+
+### **What Causes Inflation?**
+
+Inflation can be caused by several factors, which can be broadly categorized into **demand-pull inflation** and **cost-push inflation**, as well as **structural and monetary factors**.
+
+---
+
+### **1. Demand-Pull Inflation**
+This occurs when **aggregate demand exceeds aggregate supply** in an economy. When consumers, businesses, and governments spend more than what the economy can produce, prices rise.
+
+- **Examples:**
+  - A booming economy with high employment and strong consumer spending.
+  - Increased government spending or tax cuts.
+  - A surge in consumer confidence leading to increased spending.
+
+---
+
+### **2. Cost-Push Inflation**
+This happens when **production costs increase**, leading to higher prices for goods and services.
+
+- **Examples:**
+  - Rising wages (e.g., due to unionization or minimum wage laws).
+  - Increased prices for raw materials or energy (e.g., oil price hikes).
+  - Higher import costs due to currency depreciation or trade restrictions.
+
+---
+
+### **3. Structural Inflation**
+This is due to long-term changes in the economy, such as:
+
+- **Monetary inflation**: When the money supply grows faster than the economy's ability to produce goods and services.
+- **Built-in inflation**: Expectations of future inflation lead to higher wage demands, which in turn push up prices.
+
+---
+
+### **How Central Banks Try to Control Inflation**
+
+Central banks, such as the **Federal Reserve (U.S.)**, the **European Central Bank (ECB)**, or the **Bank of Japan (BoJ)**, are responsible for managing inflation and maintaining price stability. They use a variety of tools to control inflation, primarily through **monetary policy**.
+
+---
+
+### **1. Interest Rates**
+- **Raising interest rates** makes borrowing more expensive, which reduces consumer and business spending.
+- **Lowering interest rates** encourages spending and investment, which can stimulate economic growth but may also increase inflation.
+
+---
+
+### **2. Open Market Operations**
+- Central banks buy or sell government securities in the open market to influence the money supply.
+- **Buying securities** increases the money supply and lowers interest rates.
+- **Selling securities** reduces the money supply and raises interest rates.
+
+---
+
+### **3. Reserve Requirements**
+- Central banks can adjust the amount of money banks are required to hold in reserve.
+- **Higher reserve requirements** reduce the amount of money banks can lend, slowing down economic activity.
+- **Lower reserve requirements** allow banks to lend more, increasing the money supply.
+
+---
+
+### **4. Quantitative Easing (QE)**
+- In times of severe economic downturn, central banks may engage in **quantitative easing**, which involves purchasing large quantities of financial assets (like government bonds) to increase the money supply and lower long-term interest rates.
+
+---
+
+### **5. Communication and Expectations Management**
+- Central banks also use **forward guidance** to shape expectations about future interest rates and inflation.
+- Clear communication helps stabilize inflation expectations and prevents inflation from becoming entrenched.
+
+---
+
+### **The Goal of Central Banks**
+The primary goal of most central banks is to **maintain price stability**, typically defined as keeping inflation at a low and predictable rate (often around 2% per year). This helps support economic growth, employment, and financial stability.
+
+---
+
+### **Summary**
+
+- **Inflation** is caused by factors such as increased demand, rising production costs, or structural changes in the economy.
+- **Central banks** control inflation primarily through **monetary policy tools** like interest rates, open market operations, and reserve requirements.
+- The ultimate aim is to **maintain price stability** and support sustainable economic growth.
+
+By carefully managing the money supply and interest rates, central banks aim to keep inflation in check and ensure the long-term health of the economy.

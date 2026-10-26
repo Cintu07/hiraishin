@@ -1,0 +1,8 @@
+<|im_start|>user
+Explain why the sky is blue and why sunsets are red, at the level of a curious high school student.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

@@ -1,0 +1,8 @@
+<|im_start|>user
+How many ways can 5 people sit around a round table if two of them refuse to sit next to each other? Explain the counting.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

@@ -1,0 +1,6 @@
+Enzymes speed up chemical reactions by lowering activation energy and have active sites that specifically bind to substrates, facilitating reactions. Their activity is influenced by temperature and pH, and they can be inhibited by substances that block their active sites or alter their shape.
+
+**Three questions a student might ask:**
+1. How do enzymes specifically lower the activation energy of a reaction?
+2. What happens to an enzyme if it is exposed to a temperature that is too high?
+3. How do inhibitors affect enzyme activity, and what are some examples of drugs that work this way?

@@ -1,0 +1,75 @@
+Here's a Python function that parses a CSV file of transactions and returns the total spent per month. It includes type hints and a short example.
+
+### ✅ Function with Type Hints
+
+```python
+import csv
+from typing import Dict, List, Tuple
+from datetime import datetime
+
+def total_spent_per_month(csv_file_path: str) -> Dict[str, float]:
+    """
+    Reads a CSV file containing transaction data and returns the total spent per month.
+
+    Args:
+        csv_file_path (str): Path to the CSV file.
+
+    Returns:
+        Dict[str, float]: A dictionary mapping month names (e.g., "January") to total spent.
+    """
+    total_by_month: Dict[str, float] = {}
+
+    with open(csv_file_path, mode='r', newline='', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            date_str = row['date']
+            amount = float(row['amount'])
+
+            # Parse the date
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+            month_name = date_obj.strftime("%B")  # Full month name (e.g., "January")
+
+            # Add to the total for the month
+            total_by_month[month_name] = total_by_month.get(month_name, 0.0) + amount
+
+    return total_by_month
+```
+
+---
+
+### ✅ Example Usage
+
+```python
+# Example CSV file content (transactions.csv):
+# date,description,amount
+# 2025-01-15,coffee,2.50
+# 2025-01-20,rent,1000.00
+# 2025-02-05,groceries,50.00
+# 2025-02-10,entertainment,30.00
+
+# Call the function
+result = total_spent_per_month("transactions.csv")
+print(result)
+```
+
+---
+
+### ✅ Output
+
+If the CSV file contains the example data above, the output will be:
+
+```python
+{
+    'January': 1002.5,
+    'February': 80.0
+}
+```
+
+---
+
+### ✅ Notes
+
+- The function assumes the CSV has columns named `date`, `description`, and `amount`.
+- The date format is expected to be in `YYYY-MM-DD`.
+- The amount is parsed as a float, and negative values (for credits) would need to be handled separately if needed.
+- The function returns the total **spent**, so if you want to track net changes, you'd need to adjust the logic accordingly.

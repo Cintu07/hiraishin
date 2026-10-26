@@ -1,0 +1,8 @@
+<|im_start|>user
+Explain what causes inflation and how central banks try to control it.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

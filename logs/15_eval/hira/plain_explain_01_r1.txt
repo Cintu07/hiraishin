@@ -1,0 +1,89 @@
+Hash tables are data structures that store key-value pairs, using a hash function to compute an index where the value should be stored. However, **collisions** can occur when two different keys hash to the same index. There are two main strategies for handling collisions: **chaining** and **open addressing**. Let's compare them in terms of how they work and their trade-offs.
+
+---
+
+## 🔐 **Chaining**
+
+### **How it works:**
+- Each index in the hash table points to a **linked list** (or another structure like a balanced tree) of key-value pairs.
+- When a collision occurs, the new key-value pair is added to the linked list at that index.
+- This allows multiple entries to be stored at the same index.
+
+### **Example:**
+```
+Index 0 → (Key1, Value1) → (Key2, Value2)
+Index 1 → (Key3, Value3)
+```
+
+### **Pros:**
+- **Efficient for large datasets** – since each bucket can hold multiple entries.
+- **Easy to implement** – especially with linked lists.
+- **Good for handling multiple collisions** without rehashing.
+- **Can handle dynamic resizing** easily.
+
+### **Cons:**
+- **Increased memory usage** due to the overhead of linked list nodes.
+- **Potential performance degradation** if the number of collisions is high (e.g., long chains).
+- **Slower lookups** compared to open addressing when chains are long.
+
+---
+
+## 🔁 **Open Addressing**
+
+### **How it works:**
+- All elements are stored in the **same array**.
+- When a collision occurs, the algorithm searches for the **next available slot** using a **probe sequence** (e.g., linear probing, quadratic probing, or double hashing).
+- The key-value pair is inserted into the first available slot.
+
+### **Example:**
+```
+Index 0 → (Key1, Value1)
+Index 1 → (Key2, Value2)
+Index 2 → (Key3, Value3)
+Index 3 → (Key4, Value4)
+```
+
+### **Pros:**
+- **Better cache performance** – since all elements are stored in the same array.
+- **Lower memory overhead** compared to chaining.
+- **Faster lookups** in some cases due to contiguous memory access.
+
+### **Cons:**
+- **Requires more complex logic** for probing and handling deletions.
+- **Risk of clustering** (e.g., linear probing can lead to long sequences of filled slots).
+- **More difficult to implement** and manage, especially with deletions.
+- **Limited scalability** – may require rehashing when the table becomes too full.
+
+---
+
+## 📌 **Trade-offs Summary**
+
+| Feature | Chaining | Open Addressing |
+|--------|----------|-----------------|
+| **Memory Usage** | Higher (due to linked lists) | Lower (all in one array) |
+| **Collision Handling** | Stores entries in a linked list | Probes for next available slot |
+| **Performance** | Slower for long chains | Faster for small chains |
+| **Cache Efficiency** | Lower | Higher |
+| **Ease of Implementation** | Easier | More complex |
+| **Scalability** | Better | Limited (may require rehashing) |
+| **Deletion** | Easier | More complex (requires marking or rehashing) |
+
+---
+
+## ✅ **When to Use Which?**
+
+- **Use chaining** if:
+  - You expect a high number of collisions.
+  - You need to support dynamic resizing easily.
+  - You're working with large datasets or unbounded data.
+
+- **Use open addressing** if:
+  - You want better cache performance and memory efficiency.
+  - You're working with a fixed or predictable dataset size.
+  - You need fast lookups and are okay with more complex implementation.
+
+---
+
+## 🧠 **Conclusion**
+
+Both chaining and open addressing are effective methods for handling collisions in hash tables, but they have different trade-offs in terms of performance, memory usage, and implementation complexity. The choice between them depends on the specific requirements of your application, such as data size, expected collision rate, and performance constraints.

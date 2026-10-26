@@ -1,0 +1,64 @@
+We are asked to find how many ways **5 people** can sit around a **round table**, given that **two of them refuse to sit next to each other**.
+
+---
+
+### Step 1: Total number of ways to seat 5 people around a round table
+
+When arranging people **around a round table**, the number of distinct arrangements is:
+
+$$
+(n - 1)! = (5 - 1)! = 4! = 24
+$$
+
+This is because in circular permutations, one position is fixed to account for rotational symmetry.
+
+---
+
+### Step 2: Subtract the number of arrangements where the two people **do sit next to each other**
+
+Let’s call the two people who refuse to sit next to each other **A** and **B**.
+
+We want to count the number of arrangements where **A and B are sitting next to each other**, and then subtract that from the total.
+
+#### Step 2.1: Treat A and B as a single "block"
+
+If A and B are sitting together, we can treat them as a single unit or "block". So instead of 5 people, we now have:
+
+- 1 block (A-B or B-A)
+- 3 other people
+
+So we have **4 units** to arrange around the table.
+
+Number of circular arrangements of 4 units:
+
+$$
+(4 - 1)! = 3! = 6
+$$
+
+#### Step 2.2: Within the block, A and B can be arranged in 2 ways: A-B or B-A
+
+So total number of arrangements where A and B are sitting together:
+
+$$
+3! \times 2 = 6 \times 2 = 12
+$$
+
+---
+
+### Step 3: Subtract from total
+
+Total number of arrangements where A and B **do not sit next to each other**:
+
+$$
+\text{Total} - \text{Arrangements with A and B together} = 24 - 12 = 12
+$$
+
+---
+
+### ✅ Final Answer:
+
+$$
+\boxed{12}
+$$
+
+There are **12** ways to seat 5 people around a round table such that two of them do **not** sit next to each other.

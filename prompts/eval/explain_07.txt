@@ -1,0 +1,8 @@
+<|im_start|>user
+Explain how GPS works out your position from satellite signals, including why clocks matter.<|im_end|>
+<|im_start|>assistant
+<think>
+
+</think>
+
+

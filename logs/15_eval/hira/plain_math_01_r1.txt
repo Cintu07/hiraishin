@@ -1,0 +1,44 @@
+We are given:
+
+- **Pens**: 3 pens cost $2 → So, **1 pen costs $2 ÷ 3 = $0.666...**
+- **Notebooks**: $3.50 each
+- Sam buys **12 pens** and **some notebooks**, and pays **$29** in total.
+
+Let’s define:
+
+- Let **n** be the number of notebooks Sam bought.
+
+### Step 1: Calculate the cost of the pens
+Sam buys 12 pens.
+
+Cost of 1 pen = $2 ÷ 3 = $2/3
+
+So, cost of 12 pens = 12 × (2/3) = $8
+
+### Step 2: Set up the total cost equation
+Total cost = cost of pens + cost of notebooks
+
+$$
+\text{Total cost} = 8 + 3.50n = 29
+$$
+
+### Step 3: Solve for n
+
+$$
+8 + 3.50n = 29
+$$
+
+Subtract 8 from both sides:
+
+$$
+3.50n = 21
+$$
+
+Now divide both sides by 3.50:
+
+$$
+n = \frac{21}{3.50} = 6
+$$
+
+### ✅ Final Answer:
+**Sam bought 6 notebooks.**

@@ -1,0 +1,104 @@
+Sure! Below is a C program that defines a singly linked list, includes a function to reverse the list in place, and a `main()` function to test it.
+
+### ✅ C Program to Reverse a Singly Linked List In Place
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a node
+typedef struct Node {
+    int data;
+    struct Node* next;
+} Node;
+
+// Function to reverse a singly linked list in place
+void reverseList(Node** headRef) {
+    Node* prev = NULL;
+    Node* current = *headRef;
+    Node* next = NULL;
+
+    while (current != NULL) {
+        next = current->next;
+        current->next = prev;
+        prev = current;
+        current = next;
+    }
+
+    // Update the head to the last node
+    *headRef = prev;
+}
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    if (newNode == NULL) {
+        printf("Memory allocation failed.\n");
+        exit(EXIT_FAILURE);
+    }
+    newNode->data = data;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to add a node at the end of the list
+void append(Node** headRef, int data) {
+    Node* newNode = createNode(data);
+    if (*headRef == NULL) {
+        *headRef = newNode;
+    } else {
+        Node* temp = *headRef;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+    }
+}
+
+// Function to print the list
+void printList(Node* head) {
+    Node* temp = head;
+    while (temp != NULL) {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// Main function to test the reverseList function
+int main() {
+    Node* head = NULL;
+
+    // Create a sample linked list: 1 -> 2 -> 3 -> 4 -> NULL
+    append(&head, 1);
+    append(&head, 2);
+    append(&head, 3);
+    append(&head, 4);
+
+    printf("Original list: ");
+    printList(head);
+
+    // Reverse the list in place
+    reverseList(&head);
+
+    printf("Reversed list: ");
+    printList(head);
+
+    return 0;
+}
+```
+
+### 🔍 Explanation:
+
+- **`reverseList` Function**: This function takes a pointer to a pointer to the head of the list (`Node** headRef`). It uses three pointers (`prev`, `current`, and `next`) to reverse the links between nodes in place.
+- **`append` Function**: Adds a new node at the end of the list.
+- **`printList` Function**: Prints the elements of the list.
+- **`main()` Function**: Creates a sample list, prints it, reverses it, and prints the reversed list.
+
+### 📌 Output:
+```
+Original list: 1 -> 2 -> 3 -> 4 -> NULL
+Reversed list: 4 -> 3 -> 2 -> 1 -> NULL
+```
+
+Let me know if you'd like a version that uses recursion or handles edge cases like empty lists!

@@ -1,0 +1,7 @@
+Enzymes are special helpers that make chemical reactions happen faster. They do this by lowering the energy needed to start the reaction. Each enzyme has a special part called an active site, which is like a pocket that fits a specific molecule, called a substrate, just like a key fits a lock.
+
+When the substrate fits into the active site, the enzyme can help the reaction happen more easily. It might stretch a bond, bring parts of the molecule together, or even act like a temporary helper. The best part is that enzymes aren’t used up—they can help thousands of molecules every second!
+
+But enzymes are sensitive to temperature and pH. Most human enzymes work best when it’s around 37 degrees Celsius, which is body temperature. If it gets too hot, the enzyme can lose its shape and stop working, a process called denaturing.
+
+Some substances, called inhibitors, can slow down enzymes. They might take the place of the substrate in the active site, or they might change the shape of the enzyme. Many medicines work this way to help treat diseases.

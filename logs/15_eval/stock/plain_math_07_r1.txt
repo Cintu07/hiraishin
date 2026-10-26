@@ -1,0 +1,59 @@
+We are given:
+
+- A bag contains **4 red marbles** and **6 blue marbles**, so a total of **10 marbles**.
+- Two marbles are drawn **without replacement**.
+- We are to find the **probability that both marbles are the same color**.
+
+---
+
+### Step 1: Total number of ways to draw 2 marbles from 10
+
+$$
+\text{Total ways} = \binom{10}{2} = \frac{10 \times 9}{2} = 45
+$$
+
+---
+
+### Step 2: Favorable outcomes (both marbles are the same color)
+
+There are two cases where both marbles are the same color:
+
+#### Case 1: Both marbles are red
+
+- Number of ways to choose 2 red marbles from 4:
+$$
+\binom{4}{2} = \frac{4 \times 3}{2} = 6
+$$
+
+#### Case 2: Both marbles are blue
+
+- Number of ways to choose 2 blue marbles from 6:
+$$
+\binom{6}{2} = \frac{6 \times 5}{2} = 15
+$$
+
+---
+
+### Step 3: Total favorable outcomes
+
+$$
+\text{Favorable outcomes} = 6 + 15 = 21
+$$
+
+---
+
+### Step 4: Probability
+
+$$
+\text{Probability} = \frac{\text{Favorable outcomes}}{\text{Total outcomes}} = \frac{21}{45} = \frac{7}{15}
+$$
+
+---
+
+### ✅ Final Answer:
+
+$$
+\boxed{\frac{7}{15}}
+$$
+
+So, the probability that both marbles drawn are the same color is **$\frac{7}{15}$**.

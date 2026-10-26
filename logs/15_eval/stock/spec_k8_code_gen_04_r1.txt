@@ -1,0 +1,60 @@
+Here's a JavaScript function that **debounces another function** and includes a **cancel method**, along with **JSDoc comments** for documentation:
+
+```javascript
+/**
+ * Debounces a function, ensuring it is only called after a certain delay has passed
+ * without being invoked again. Also provides a cancel method to stop the debounce.
+ *
+ * @param {Function} func - The function to debounce.
+ * @param {number} delay - The delay in milliseconds.
+ * @returns {Object} An object with the debounced function and a cancel method.
+ */
+function debounce(func, delay) {
+    let timeoutId;
+
+    /**
+     * The debounced function. It will call the original function only after the delay
+     * has passed without any further invocations.
+     *
+     * @param {...any} args - Arguments to pass to the original function.
+     */
+    function debounced(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    }
+
+    /**
+     * Cancels the pending debounce call.
+     */
+    function cancel() {
+        clearTimeout(timeoutId);
+    }
+
+    return {
+        debounced,
+        cancel
+    };
+}
+```
+
+### ✅ Example Usage:
+
+```javascript
+const debouncedLog = debounce((message) => {
+    console.log('Debounced:', message);
+}, 500);
+
+debouncedLog('Hello'); // No output immediately
+debouncedLog('World'); // No output immediately
+
+// After 500ms, 'Debounced: World' will be logged
+
+debouncedLog.cancel(); // Cancels the pending call
+```
+
+### 📌 Notes:
+- The `debounced` function is the one you call.
+- The `cancel` method stops the function from being called if it hasn't been invoked yet.
+- This is useful for scenarios like input validation, search suggestions, or resizing events.
