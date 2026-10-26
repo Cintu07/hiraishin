@@ -44,6 +44,15 @@ Plain, stock speculative (unpatched, lossy) and hiraishin lossless measured back
 
 Q4_K_M k=8 tau=3 per prompt: code 78.7, explain 80.5, rewrite 107.2, math 100.9 tok/s. 100+ on 2 of 4 prompts, not on the mean.
 
+## Drafter experiments (2026-10-26, AC power)
+
+- PQ2_0 0.6B as drafter: 0.0% acceptance. The model itself is broken (generates garbage alone on both builds;
+  old CIOT-V2 perplexity log reads PPL 34,558,588). Dead end. `logs/08_drafter/`
+- n-gram (prompt lookup) drafting before the model draft, `--ngram N`: same-session Q4_K_M, k=6 tau=3, 2 reps,
+  8/8 lossless: model-only 98.9 tok/s mean, + n-gram(3) 104.9-105.1 tok/s mean (plain 62.9-63.3 this session).
+  Per prompt: rewrite 119 -> 153, code 89 -> 88, explain 87 -> 86, math 101 -> 93. Mean > 100, median ~90.
+  Match length 3/4/5 and a 4-cycle cooldown after a rejected n-gram draft change little. `logs/09_ngram/`
+
 ## Not finished
 
 - Not yet tried: PQ2_0 0.6B drafter, n-gram drafting, the kernel past 4 rows/block, tuning tau.

@@ -28,6 +28,8 @@ struct args_t {
     std::vector<std::string> prompts;
     std::vector<int> ks = {2, 4, 8};
     std::vector<float> taus = {0.0f};
+    std::vector<int> ngrams = {0};
+    int ng_cooldown = 0;
     std::vector<int> inv_bs = {2, 3, 5, 9};
     int n_predict = 256, n_ctx = 2048, reps = 1;
     bool verify_cost = true, invariance = true, pad_guard = true, draft_probe = false, draft_b2 = true;
@@ -66,6 +68,8 @@ static args_t parse(int argc, char ** argv) {
         else if (k == "--no-pad-guard")   a.pad_guard = false;
         else if (k == "--draft-probe")    a.draft_probe = true;
         else if (k == "--no-draft-b2")    a.draft_b2 = false;
+        else if (k == "--ngram")          a.ngrams = parse_list(next());
+        else if (k == "--ng-cooldown")    a.ng_cooldown = std::atoi(next());
         else { fprintf(stderr, "unknown arg %s\n", k.c_str()); exit(1); }
     }
     if (a.target.empty() || a.prompts.empty()) {
@@ -219,6 +223,7 @@ struct spec_result {
     int n_clipped = 0;  // cycles whose draft length was shortened by the KV_PAD guard
     double ms_draft_first = 0;    // part of ms_draft_gpu: the first draft decode of each cycle (catch-up batch)
     int n_draft_first_multi = 0;  // cycles whose catch-up batch had more than one token
+    int n_ngram_cycles = 0, n_ngram_drafted = 0, n_ngram_accept = 0;  // cycles drafted by n-gram lookup
     double ms_total = 0, ms_draft_gpu = 0, ms_draft_cpu = 0, ms_verify_gpu = 0, ms_verify_cpu = 0, ms_kv = 0;
     std::vector<int> accepted_per_cycle;
 };
@@ -240,7 +245,7 @@ static int pad_room(int pos) {
 // plain decoding when those are bit-identical to batch-1 logits (see the invariance test).
 // tau > 0: adaptive draft length, stop drafting after a token whose draft logit margin (top1 - top2) is below tau
 static spec_result run_spec(model_t & t, model_t & d, const std::vector<llama_token> & p, int n_predict, int k,
-                            bool pad_guard, float tau, bool draft_b2) {
+                            bool pad_guard, float tau, bool draft_b2, int ngram, int ng_cooldown) {
     spec_result r;
     top2 first = prefill(t, p);
     llama_memory_clear(d.mem(), true);
@@ -254,15 +259,36 @@ static spec_result run_spec(model_t & t, model_t & d, const std::vector<llama_to
     int n_past_d = (int) p.size();  // draft KV length, its cells always hold all[0 .. n_past_d)
 
     std::vector<llama_token> vb(k + 1), dr(k);
+    int ng_wait = 0;  // cycles left before the next n-gram lookup (backoff after a fully rejected n-gram draft)
     auto t0 = clk::now();
     while ((int) r.ids.size() < n_predict && !llama_vocab_is_eog(t.vocab, all.back())) {
         const llama_token pending = all.back();
         const int k_room = pad_guard ? std::min(k, pad_room(n_past_t) - 1) : k;
         if (k_room < k) r.n_clipped++;
 
-        // ---- draft up to k_room tokens (the draft first catches up on every committed token it has not seen)
+        // ---- n-gram draft: if the last `ngram` tokens appeared earlier (prompt or output), propose what followed
+        //      the latest earlier occurrence. Costs no GPU work; the draft model only runs when there is no match.
         int kk = 0;
-        if (k_room > 0) {
+        bool from_ngram = false;
+        if (ng_wait > 0) ng_wait--;
+        else if (ngram > 0 && k_room > 0 && (int) all.size() > ngram) {
+            auto tl = clk::now();
+            const int L = (int) all.size();
+            for (int j = L - ngram - 1; j >= 0 && !from_ngram; --j) {
+                if (std::equal(all.begin() + j, all.begin() + j + ngram, all.end() - ngram)) {
+                    for (int q = j + ngram; q < L && kk < k_room; q++) dr[kk++] = all[q];
+                    from_ngram = kk > 0;
+                }
+            }
+            r.ms_draft_cpu += ms_since(tl);
+            if (from_ngram) {
+                r.n_ngram_cycles++;
+                r.n_ngram_drafted += kk;
+            }
+        }
+
+        // ---- draft up to k_room tokens (the draft first catches up on every committed token it has not seen)
+        if (k_room > 0 && !from_ngram) {
             // token at a draft-side position: committed tokens, then this cycle's drafts
             auto tok_at = [&](int pos) { return pos < (int) all.size() ? all[pos] : dr[pos - (int) all.size()]; };
             // fixed shape: every draft decode is exactly 2 tokens (re-decoding the previous token), because
@@ -274,10 +300,11 @@ static spec_result run_spec(model_t & t, model_t & d, const std::vector<llama_to
                         llama_memory_seq_rm(d.mem(), 0, n_past_d - 1, -1);
                         n_past_d--;
                     }
-                    while (end - n_past_d > 2) {  // rare: long catch-up, feed in pairs
-                        llama_token pr[2] = {tok_at(n_past_d), tok_at(n_past_d + 1)};
-                        ms += decode(d, pr, 2, n_past_d, false);
-                        n_past_d += 2;
+                    if (end - n_past_d > 2) {  // long catch-up (after n-gram cycles): one batch, then the usual pair
+                        std::vector<llama_token> pre;
+                        for (int q = n_past_d; q < end - 2; q++) pre.push_back(tok_at(q));
+                        ms += decode(d, pre.data(), (int) pre.size(), n_past_d, false);
+                        n_past_d = end - 2;
                     }
                 }
                 std::vector<llama_token> buf;
@@ -333,6 +360,10 @@ static spec_result run_spec(model_t & t, model_t & d, const std::vector<llama_to
         all.push_back(bonus);
         r.ids.push_back(bonus);
         r.n_accept += m;
+        if (from_ngram) {
+            r.n_ngram_accept += m;
+            if (m == 0) ng_wait = ng_cooldown;
+        }
         r.accepted_per_cycle.push_back(m);
         r.cycles++;
         // stop on eog inside the accepted run
@@ -390,11 +421,12 @@ int main(int argc, char ** argv) {
         if (d.ctx) {
             for (int k : a.ks) {
               for (float tau : a.taus) {
+               for (int ng : a.ngrams) {
                 for (int rep = 1; rep <= a.reps; rep++) {
-                    spec_result sr = run_spec(t, d, prompt, a.n_predict, k, a.pad_guard, tau, a.draft_b2);
+                    spec_result sr = run_spec(t, d, prompt, a.n_predict, k, a.pad_guard, tau, a.draft_b2, ng, a.ng_cooldown);
                     char tau_s[32];
                     snprintf(tau_s, sizeof(tau_s), "%g", tau);
-                    std::string tag = "spec_k" + std::to_string(k) + (tau > 0 ? std::string("_tau") + tau_s : "") + "_" + name + "_r" + std::to_string(rep);
+                    std::string tag = "spec_k" + std::to_string(k) + (tau > 0 ? std::string("_tau") + tau_s : "") + (ng > 0 ? "_ng" + std::to_string(ng) : "") + "_" + name + "_r" + std::to_string(rep);
                     write_run(a, tag, t, sr.ids);
                     int first_diff = -1;
                     for (size_t i = 0; i < std::min(sr.ids.size(), ref.ids.size()); i++) {
@@ -406,13 +438,16 @@ int main(int argc, char ** argv) {
                     printf("{\"event\":\"spec\",\"prompt\":\"%s\",\"k\":%d,\"tau\":%g,\"rep\":%d,\"n\":%zu,\"cycles\":%d,\"n_drafted\":%d,\"n_accept\":%d,"
                            "\"ms_total\":%.3f,\"tok_s\":%.3f,\"ms_draft_gpu\":%.3f,\"ms_draft_cpu\":%.3f,\"ms_verify_gpu\":%.3f,"
                            "\"ms_verify_cpu\":%.3f,\"ms_kv\":%.3f,\"ms_other\":%.3f,\"matches_plain\":%s,\"first_diff\":%d,"
-                           "\"plain_margin_at_diff\":%.5f,\"pad_guard\":%s,\"n_clipped\":%d,\"ms_draft_first\":%.3f,\"n_draft_first_multi\":%d}\n",
+                           "\"plain_margin_at_diff\":%.5f,\"pad_guard\":%s,\"n_clipped\":%d,\"ms_draft_first\":%.3f,\"n_draft_first_multi\":%d,\"ngram\":%d,\"n_ngram_cycles\":%d,"
+                           "\"n_ngram_drafted\":%d,\"n_ngram_accept\":%d}\n",
                            name.c_str(), k, tau, rep, sr.ids.size(), sr.cycles, sr.n_drafted, sr.n_accept, sr.ms_total,
                            (sr.n_generated - 1) / (sr.ms_total / 1e3), sr.ms_draft_gpu, sr.ms_draft_cpu, sr.ms_verify_gpu,
                            sr.ms_verify_cpu, sr.ms_kv, other, first_diff < 0 ? "true" : "false", first_diff, margin,
-                           a.pad_guard ? "true" : "false", sr.n_clipped, sr.ms_draft_first, sr.n_draft_first_multi);
+                           a.pad_guard ? "true" : "false", sr.n_clipped, sr.ms_draft_first, sr.n_draft_first_multi, ng,
+                           sr.n_ngram_cycles, sr.n_ngram_drafted, sr.n_ngram_accept);
                     fflush(stdout);
                 }
+               }
               }
             }
         }
