@@ -11,7 +11,15 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.join(HERE, "..")
 sys.path.insert(0, os.path.join(ROOT, "figkit"))
-from figkit import C, Sheet  # noqa: E402
+from figkit import C, Sheet as _Sheet  # noqa: E402
+
+# FIGMAP=01:01,08:06 renumbers figures for a post that uses a subset; cross references inside figures follow it
+FIGMAP = dict(x.split(":") for x in os.environ.get("FIGMAP", "").split(",") if x)
+ref = lambda n: FIGMAP.get(n, n)
+
+
+def Sheet(fig, *a, **k):
+    return _Sheet(ref(fig), *a, **k)
 
 THEME = os.environ.get("FIGKIT_THEME", "drafting")
 OUT = os.path.join(HERE, "img") if THEME == "drafting" else os.path.join(HERE, "img", THEME)
@@ -56,7 +64,7 @@ def fig01():
         (1, f"4.672 gb / 286 gb/s = {stream:.1f} ms.\nthe bus is the speed limit."),
         (2, "a pass with one token: the read,\nplus the math, plus copying logits out."),
         (3, f"a 2nd token in the same pass costs\n{vc[2] - vc[1]:.1f} ms more ({100 * (vc[2] / vc[1] - 1):.0f}%). this is the loophole."),
-        (4, "a 3rd one costs more: the kernel\nfor 3 columns is slower (fig. 08)."),
+        (4, f"a 3rd one costs more: the kernel\nfor 3 columns is slower (fig. {ref('08')})."),
     ], w=500)
     s.save(os.path.join(OUT, "fig_01_read.png"))
 
@@ -84,7 +92,7 @@ def fig02():
     s.dim(x0, 662, x0 + 4 * cw + 3 * gap, 662, "out: the cache is full", size=12)
     s.notes(1040, 230, [
         (1, "guesses are cheap: the draft model\nhas 14x fewer parameters."),
-        (2, "checking 6 positions costs about\nwhat checking 1 costs (fig. 01)."),
+        (2, f"checking 6 positions costs about\nwhat checking 1 costs (fig. {ref('01')})."),
         (3, "3 guesses match, then the target's\nown pick \"full\" replaces \"slow\"."),
         (4, "4 tokens for one read of the weights.\nevery one is what the target would\nhave said on its own."),
     ], w=500)
@@ -144,7 +152,7 @@ def fig04():
     s.dim(110, 648, 110 + 512 * px, 648, "512")
     s.balloon(110 + 512 * px + 40, 610, 1, to=(110 + 512 * px - 3, 610))
     s.notes(1060, 420, [
-        (1, "a different kv length changes how\nattention splits its work (fig. 05).\nthe logits move."),
+        (1, f"a longer range can change how many\nblocks attention splits it into (fig. {ref('05')}).\nthe masked cells themselves add zero."),
         (2, "fix: a verify batch never crosses a\nmultiple of 256. cut it at 255,\nstart the next one at 256."),
     ], w=470)
     s.save(os.path.join(OUT, "fig_04_kvpad.png"))
