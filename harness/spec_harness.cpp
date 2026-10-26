@@ -30,6 +30,7 @@ struct args_t {
     std::vector<float> taus = {0.0f};
     std::vector<int> ngrams = {0};
     int ng_cooldown = 0;
+    std::vector<int> pad_verifies = {0};
     std::vector<int> inv_bs = {2, 3, 5, 9};
     int n_predict = 256, n_ctx = 2048, reps = 1;
     bool verify_cost = true, invariance = true, pad_guard = true, draft_probe = false, draft_b2 = true;
@@ -70,6 +71,7 @@ static args_t parse(int argc, char ** argv) {
         else if (k == "--no-draft-b2")    a.draft_b2 = false;
         else if (k == "--ngram")          a.ngrams = parse_list(next());
         else if (k == "--ng-cooldown")    a.ng_cooldown = std::atoi(next());
+        else if (k == "--pad-verify")     a.pad_verifies = parse_list(next());
         else { fprintf(stderr, "unknown arg %s\n", k.c_str()); exit(1); }
     }
     if (a.target.empty() || a.prompts.empty()) {
@@ -245,7 +247,7 @@ static int pad_room(int pos) {
 // plain decoding when those are bit-identical to batch-1 logits (see the invariance test).
 // tau > 0: adaptive draft length, stop drafting after a token whose draft logit margin (top1 - top2) is below tau
 static spec_result run_spec(model_t & t, model_t & d, const std::vector<llama_token> & p, int n_predict, int k,
-                            bool pad_guard, float tau, bool draft_b2, int ngram, int ng_cooldown) {
+                            bool pad_guard, float tau, bool draft_b2, int ngram, int ng_cooldown, int pad_verify) {
     spec_result r;
     top2 first = prefill(t, p);
     llama_memory_clear(d.mem(), true);
@@ -258,12 +260,18 @@ static spec_result run_spec(model_t & t, model_t & d, const std::vector<llama_to
     int n_past_t = (int) p.size();  // target KV length == all.size() - 1
     int n_past_d = (int) p.size();  // draft KV length, its cells always hold all[0 .. n_past_d)
 
-    std::vector<llama_token> vb(k + 1), dr(k);
+    // pad_verify > 0: every verify pass has exactly pad_verify tokens (drafts capped at pad_verify - 1, the rest
+    // padded). A changing batch size re-captures the CUDA graph each call (+1.4-2.8 ms, logs/11_graph_probe).
+    // Padding sits after the real tokens: causal attention and per-column mat-vec arithmetic leave the real
+    // positions' logits unchanged, the KV_PAD guard covers the padded window, and seq_rm drops the padded cells.
+    if (pad_verify > 0) k = std::min(k, pad_verify - 1);
+    std::vector<llama_token> vb(std::max(k, pad_verify) + 1), dr(k);
     int ng_wait = 0;  // cycles left before the next n-gram lookup (backoff after a fully rejected n-gram draft)
     auto t0 = clk::now();
     while ((int) r.ids.size() < n_predict && !llama_vocab_is_eog(t.vocab, all.back())) {
         const llama_token pending = all.back();
         const int k_room = pad_guard ? std::min(k, pad_room(n_past_t) - 1) : k;
+        const bool padded = pad_verify > 0 && (!pad_guard || pad_room(n_past_t) >= pad_verify);
         if (k_room < k) r.n_clipped++;
 
         // ---- n-gram draft: if the last `ngram` tokens appeared earlier (prompt or output), propose what followed
@@ -333,7 +341,12 @@ static spec_result run_spec(model_t & t, model_t & d, const std::vector<llama_to
         // ---- verify [pending, dr0..dr(kk-1)] in one target batch
         vb[0] = pending;
         for (int i = 0; i < kk; i++) vb[i + 1] = dr[i];
-        r.ms_verify_gpu += decode(t, vb.data(), kk + 1, n_past_t, true);
+        int n_verify = kk + 1;
+        if (padded) {
+            for (int i = n_verify; i < pad_verify; i++) vb[i] = pending;
+            n_verify = pad_verify;
+        }
+        r.ms_verify_gpu += decode(t, vb.data(), n_verify, n_past_t, true);
         auto tc = clk::now();
         int m = 0;
         llama_token bonus = 0;
@@ -422,11 +435,13 @@ int main(int argc, char ** argv) {
             for (int k : a.ks) {
               for (float tau : a.taus) {
                for (int ng : a.ngrams) {
+                for (int pv : a.pad_verifies) {
+                if (pv > 0 && pv - 1 > k) continue;
                 for (int rep = 1; rep <= a.reps; rep++) {
-                    spec_result sr = run_spec(t, d, prompt, a.n_predict, k, a.pad_guard, tau, a.draft_b2, ng, a.ng_cooldown);
+                    spec_result sr = run_spec(t, d, prompt, a.n_predict, k, a.pad_guard, tau, a.draft_b2, ng, a.ng_cooldown, pv);
                     char tau_s[32];
                     snprintf(tau_s, sizeof(tau_s), "%g", tau);
-                    std::string tag = "spec_k" + std::to_string(k) + (tau > 0 ? std::string("_tau") + tau_s : "") + (ng > 0 ? "_ng" + std::to_string(ng) : "") + "_" + name + "_r" + std::to_string(rep);
+                    std::string tag = "spec_k" + std::to_string(k) + (tau > 0 ? std::string("_tau") + tau_s : "") + (ng > 0 ? "_ng" + std::to_string(ng) : "") + (pv > 0 ? "_pv" + std::to_string(pv) : "") + "_" + name + "_r" + std::to_string(rep);
                     write_run(a, tag, t, sr.ids);
                     int first_diff = -1;
                     for (size_t i = 0; i < std::min(sr.ids.size(), ref.ids.size()); i++) {
@@ -439,13 +454,14 @@ int main(int argc, char ** argv) {
                            "\"ms_total\":%.3f,\"tok_s\":%.3f,\"ms_draft_gpu\":%.3f,\"ms_draft_cpu\":%.3f,\"ms_verify_gpu\":%.3f,"
                            "\"ms_verify_cpu\":%.3f,\"ms_kv\":%.3f,\"ms_other\":%.3f,\"matches_plain\":%s,\"first_diff\":%d,"
                            "\"plain_margin_at_diff\":%.5f,\"pad_guard\":%s,\"n_clipped\":%d,\"ms_draft_first\":%.3f,\"n_draft_first_multi\":%d,\"ngram\":%d,\"n_ngram_cycles\":%d,"
-                           "\"n_ngram_drafted\":%d,\"n_ngram_accept\":%d}\n",
+                           "\"n_ngram_drafted\":%d,\"n_ngram_accept\":%d,\"pad_verify\":%d}\n",
                            name.c_str(), k, tau, rep, sr.ids.size(), sr.cycles, sr.n_drafted, sr.n_accept, sr.ms_total,
                            (sr.n_generated - 1) / (sr.ms_total / 1e3), sr.ms_draft_gpu, sr.ms_draft_cpu, sr.ms_verify_gpu,
                            sr.ms_verify_cpu, sr.ms_kv, other, first_diff < 0 ? "true" : "false", first_diff, margin,
                            a.pad_guard ? "true" : "false", sr.n_clipped, sr.ms_draft_first, sr.n_draft_first_multi, ng,
-                           sr.n_ngram_cycles, sr.n_ngram_drafted, sr.n_ngram_accept);
+                           sr.n_ngram_cycles, sr.n_ngram_drafted, sr.n_ngram_accept, pv);
                     fflush(stdout);
+                }
                 }
                }
               }
@@ -541,6 +557,34 @@ int main(int argc, char ** argv) {
                    pt.name, median(ms_b1), median(ms_b2), ms_b1.size(), ms_b2.size());
             fflush(stdout);
         }
+    }
+
+    // target call-pattern probe: cost of each batch size when it is repeated vs when the size changes every call
+    if (a.draft_probe) {
+        auto p = tokenize(t, read_prompt(a.prompts[0]));
+        const int n0 = (int) p.size();
+        std::vector<llama_token> toks(16, p[0]);
+        const int pattern_varying[] = {3, 5, 4, 2, 5, 3, 4, 2};
+        auto run = [&](const char * name, auto pick, int iters) {
+            prefill(t, p);
+            std::vector<std::vector<double>> by_b(17);
+            for (int it = 0; it < iters; it++) {
+                const int B = pick(it);
+                const double x = decode(t, toks.data(), B, n0, true);
+                llama_memory_seq_rm(t.mem(), 0, n0, -1);
+                if (it >= 8) by_b[B].push_back(x);
+            }
+            for (int B = 1; B <= 16; B++) {
+                if (by_b[B].empty()) continue;
+                printf("{\"event\":\"target_probe\",\"pattern\":\"%s\",\"B\":%d,\"ms_median\":%.4f,\"n\":%zu}\n",
+                       name, B, median(by_b[B]), by_b[B].size());
+            }
+            fflush(stdout);
+        };
+        for (int B : {2, 3, 4, 5}) {
+            run("fixed", [B](int) { return B; }, 28);
+        }
+        run("varying", [&](int it) { return pattern_varying[it % 8]; }, 88);
     }
 
     llama_batch_free(t.batch);

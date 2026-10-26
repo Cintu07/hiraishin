@@ -1,0 +1,5 @@
+built /home/pavan/hiraishin-build/bin/spec_harness-build-cuda-hira
+exit=0 lines=9
+exit=0 lines=121
+exit=0 lines=9
+exit=0 lines=121

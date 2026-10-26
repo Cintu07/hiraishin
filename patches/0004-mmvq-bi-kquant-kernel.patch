@@ -1,43 +1,9 @@
---- a/ggml/src/ggml-cuda/mmvq.cu	2026-10-24 23:37:19.488258100 +0530
-+++ b/ggml/src/ggml-cuda/mmvq.cu	2026-10-25 00:01:53.225523500 +0530
-@@ -1,6 +1,7 @@
- #include "mmvq.cuh"
- #include "mmvq-ptq1_0.cuh"
- #include "mmvq-pq2_0.cuh"
-+#include "mmvq-bi.cuh"
- #include "quantize.cuh"
- #include "unary.cuh"
- #include "vecdotq.cuh"
-@@ -1708,6 +1709,26 @@
- 
-     const int64_t ids_stride = ids ? ids->nb[1] / ggml_type_size(ids->type) : 0;
- 
-+#if !defined(GGML_USE_HIP)
-+    if (src0->type == GGML_TYPE_Q4_K || src0->type == GGML_TYPE_Q6_K) {
-+        // batch-invariant 2-12 columns: dedicated kernel that keeps the one-column arithmetic per column but shares
-+        // weight loads / scale unpacking across columns and rows (mmvq-bi.cuh). HIRAISHIN_BI_GENERIC=1 disables it.
-+        static const bool bi_kq = ggml_cuda_batch_invariant() && getenv("HIRAISHIN_BI_GENERIC") == nullptr;
-+        const int dev = ggml_cuda_get_device();
-+        if (bi_kq && ncols_dst >= 2 && ncols_dst <= MMVQ_BI_KQ_MAX_COLS && !ids && !fusion && ne02 == 1 && ne03 == 1 &&
-+                ne01 % 8 == 0 && y_layout == GGML_CUDA_Q8_1_AOS &&
-+                get_device_table_id(ggml_cuda_info().devices[dev].cc) == MMVQ_PARAMETERS_GENERIC &&
-+                ggml_cuda_info().devices[dev].warp_size == WARP_SIZE) {
-+            if (src0->type == GGML_TYPE_Q4_K) {
-+                mul_mat_vec_q_bi_switch<GGML_TYPE_Q4_K>(src0->data, src1_q8_1_d, dst_d, ne00, ne01, ncols_dst, s01, stride_col_y, stride_col_dst, stream);
-+            } else {
-+                mul_mat_vec_q_bi_switch<GGML_TYPE_Q6_K>(src0->data, src1_q8_1_d, dst_d, ne00, ne01, ncols_dst, s01, stride_col_y, stride_col_dst, stream);
-+            }
-+            return;
-+        }
-+    }
-+#endif
-+
-     if (ncols_dst > MMVQ_MAX_BATCH_SIZE) {
-         // Only reachable in batch-invariant mode (ggml_cuda_should_use_mmvq). Each column's arithmetic does not
-         // depend on which launch it is in, so splitting into <= MMVQ_MAX_BATCH_SIZE column chunks is exact.
---- /dev/null	2026-10-25 00:01:53.000000000 +0530
-+++ b/ggml/src/ggml-cuda/mmvq-bi.cuh	2026-10-25 00:01:53.223795500 +0530
-@@ -0,0 +1,223 @@
+diff --git a/ggml/src/ggml-cuda/mmvq-bi.cuh b/ggml/src/ggml-cuda/mmvq-bi.cuh
+new file mode 100644
+index 0000000..c778cd0
+--- /dev/null
++++ b/ggml/src/ggml-cuda/mmvq-bi.cuh
+@@ -0,0 +1,226 @@
 +#pragma once
 +
 +// Batch-invariant multi-column mat-vec for Q4_K and Q6_K (hiraishin).
@@ -55,6 +21,9 @@
 +#include "vecdotq.cuh"
 +
 +#define MMVQ_BI_NWARPS 4  // calc_nwarps(type, 1, MMVQ_PARAMETERS_GENERIC) for Q4_K and Q6_K
++#ifndef MMVQ_BI_MIN_BLOCKS
++#define MMVQ_BI_MIN_BLOCKS 4  // blocks per SM asked of the register allocator (occupancy vs registers)
++#endif
 +#define MMVQ_BI_KQ_MAX_COLS 12  // this kernel handles 2..12 columns in one launch (no chunking)
 +
 +struct mmvq_bi_x_q4_K {
@@ -137,7 +106,7 @@
 +template <> struct mmvq_bi_traits<GGML_TYPE_Q6_K> { using x_t = mmvq_bi_x_q6_K; static constexpr int vdr = VDR_Q6_K_Q8_1_MMVQ; };
 +
 +template <ggml_type type, int ncols_dst, int rows_per_block>
-+__launch_bounds__(MMVQ_BI_NWARPS*WARP_SIZE, 1)
++__launch_bounds__(MMVQ_BI_NWARPS*WARP_SIZE, MMVQ_BI_MIN_BLOCKS)
 +static __global__ void mul_mat_vec_q_bi(
 +        const void * __restrict__ vx, const void * __restrict__ vy, float * __restrict__ dst,
 +        const uint32_t ncols_x, const uint32_t nrows_x, const uint32_t stride_row_x, const uint32_t stride_col_y,
@@ -261,3 +230,42 @@
 +        default: GGML_ABORT("mul_mat_vec_q_bi: unsupported ncols_dst %d", ncols_dst);
 +    }
 +}
+diff --git a/ggml/src/ggml-cuda/mmvq.cu b/ggml/src/ggml-cuda/mmvq.cu
+index 0609f60..5e6407c 100644
+--- a/ggml/src/ggml-cuda/mmvq.cu
++++ b/ggml/src/ggml-cuda/mmvq.cu
+@@ -1,6 +1,7 @@
+ #include "mmvq.cuh"
+ #include "mmvq-ptq1_0.cuh"
+ #include "mmvq-pq2_0.cuh"
++#include "mmvq-bi.cuh"
+ #include "quantize.cuh"
+ #include "unary.cuh"
+ #include "vecdotq.cuh"
+@@ -1708,6 +1709,26 @@ void ggml_cuda_mul_mat_vec_q(
+ 
+     const int64_t ids_stride = ids ? ids->nb[1] / ggml_type_size(ids->type) : 0;
+ 
++#if !defined(GGML_USE_HIP)
++    if (src0->type == GGML_TYPE_Q4_K || src0->type == GGML_TYPE_Q6_K) {
++        // batch-invariant 2-12 columns: dedicated kernel that keeps the one-column arithmetic per column but shares
++        // weight loads / scale unpacking across columns and rows (mmvq-bi.cuh). HIRAISHIN_BI_GENERIC=1 disables it.
++        static const bool bi_kq = ggml_cuda_batch_invariant() && getenv("HIRAISHIN_BI_GENERIC") == nullptr;
++        const int dev = ggml_cuda_get_device();
++        if (bi_kq && ncols_dst >= 2 && ncols_dst <= MMVQ_BI_KQ_MAX_COLS && !ids && !fusion && ne02 == 1 && ne03 == 1 &&
++                ne01 % 8 == 0 && y_layout == GGML_CUDA_Q8_1_AOS &&
++                get_device_table_id(ggml_cuda_info().devices[dev].cc) == MMVQ_PARAMETERS_GENERIC &&
++                ggml_cuda_info().devices[dev].warp_size == WARP_SIZE) {
++            if (src0->type == GGML_TYPE_Q4_K) {
++                mul_mat_vec_q_bi_switch<GGML_TYPE_Q4_K>(src0->data, src1_q8_1_d, dst_d, ne00, ne01, ncols_dst, s01, stride_col_y, stride_col_dst, stream);
++            } else {
++                mul_mat_vec_q_bi_switch<GGML_TYPE_Q6_K>(src0->data, src1_q8_1_d, dst_d, ne00, ne01, ncols_dst, s01, stride_col_y, stride_col_dst, stream);
++            }
++            return;
++        }
++    }
++#endif
++
+     if (ncols_dst > MMVQ_MAX_BATCH_SIZE) {
+         // Only reachable in batch-invariant mode (ggml_cuda_should_use_mmvq). Each column's arithmetic does not
+         // depend on which launch it is in, so splitting into <= MMVQ_MAX_BATCH_SIZE column chunks is exact.

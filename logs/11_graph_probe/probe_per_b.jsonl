@@ -1,0 +1,8 @@
+{"event":"target_probe","pattern":"fixed","B":2,"ms_median":15.7159,"n":20}
+{"event":"target_probe","pattern":"fixed","B":3,"ms_median":18.0032,"n":20}
+{"event":"target_probe","pattern":"fixed","B":4,"ms_median":18.9002,"n":20}
+{"event":"target_probe","pattern":"fixed","B":5,"ms_median":22.4761,"n":20}
+{"event":"target_probe","pattern":"varying","B":2,"ms_median":18.5044,"n":20}
+{"event":"target_probe","pattern":"varying","B":3,"ms_median":19.8470,"n":20}
+{"event":"target_probe","pattern":"varying","B":4,"ms_median":21.4722,"n":20}
+{"event":"target_probe","pattern":"varying","B":5,"ms_median":23.9168,"n":20}

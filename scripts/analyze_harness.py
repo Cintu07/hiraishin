@@ -42,17 +42,17 @@ for e in by["spec"]:
       f"{100 * e['ms_other'] / T:.1f} | {'yes' if e['matches_plain'] else 'NO'} | {diff} |")
 
 p("\n## speculative per k (pooled over prompts)\n")
-p("| k | tau | ngram | tok/s (mean of prompts) | accept % | acc/cycle | tok/pass | draft ms/cycle | verify ms/cycle | other+kv+argmax ms/cycle | runs matching plain |")
-p("|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|")
-for k, tau, ng in sorted({(e["k"], e.get("tau", 0), e.get("ngram", 0)) for e in by["spec"]}):
-    es = [e for e in by["spec"] if e["k"] == k and e.get("tau", 0) == tau and e.get("ngram", 0) == ng]
+p("| k | tau | ngram | pad | tok/s (mean of prompts) | accept % | acc/cycle | tok/pass | draft ms/cycle | verify ms/cycle | other+kv+argmax ms/cycle | runs matching plain |")
+p("|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|")
+for k, tau, ng, pv in sorted({(e["k"], e.get("tau", 0), e.get("ngram", 0), e.get("pad_verify", 0)) for e in by["spec"]}):
+    es = [e for e in by["spec"] if e["k"] == k and e.get("tau", 0) == tau and e.get("ngram", 0) == ng and e.get("pad_verify", 0) == pv]
     C = sum(e["cycles"] for e in es)
     na = sum(e["n_accept"] for e in es)
     nd = sum(e["n_drafted"] for e in es)
     dr = sum(e["ms_draft_gpu"] + e["ms_draft_cpu"] for e in es) / C
     vf = sum(e["ms_verify_gpu"] for e in es) / C
     ot = sum(e["ms_other"] + e["ms_kv"] + e["ms_verify_cpu"] for e in es) / C
-    p(f"| {k} | {tau:g} | {ng} | {st.mean(e['tok_s'] for e in es):.2f} | {100 * na / nd:.1f} | {na / C:.2f} | {(na + C) / C:.2f} | "
+    p(f"| {k} | {tau:g} | {ng} | {pv} | {st.mean(e['tok_s'] for e in es):.2f} | {100 * na / nd:.1f} | {na / C:.2f} | {(na + C) / C:.2f} | "
       f"{dr:.2f} | {vf:.2f} | {ot:.2f} | {sum(e['matches_plain'] for e in es)}/{len(es)} |")
 
 if by["verify_cost"]:

@@ -1,0 +1,27 @@
+diff --git a/ggml/src/ggml-cuda/ggml-cuda.cu b/ggml/src/ggml-cuda/ggml-cuda.cu
+index 616f1d7..df7c645 100644
+--- a/ggml/src/ggml-cuda/ggml-cuda.cu
++++ b/ggml/src/ggml-cuda/ggml-cuda.cu
+@@ -2591,7 +2591,21 @@ static bool ggml_cuda_graph_check_compability(ggml_cgraph * cgraph) {
+ }
+ 
+ static const void * ggml_cuda_graph_get_key(ggml_cgraph * cgraph) {
+-    return cgraph->nodes[0];
++    // llama.cpp rebuilds the graph for each batch shape in the same memory, so nodes[0] alone gives every shape
++    // the same key and a shape change overwrites the one captured graph. Mixing in the node count and the token
++    // dimension of the first and last nodes keeps one captured graph per shape (e.g. per speculative verify size).
++    // The key is only compared, never dereferenced. HIRAISHIN_GRAPH_KEY_SIMPLE=1 restores the stock key (A/B tests).
++    static const bool simple_key = getenv("HIRAISHIN_GRAPH_KEY_SIMPLE") != nullptr;
++    if (simple_key) {
++        return cgraph->nodes[0];
++    }
++    const ggml_tensor * first = cgraph->nodes[0];
++    const ggml_tensor * last  = cgraph->nodes[cgraph->n_nodes - 1];
++    uint64_t h = (uint64_t) (uintptr_t) first;
++    h ^= (uint64_t) cgraph->n_nodes * 0x9E3779B97F4A7C15ull;
++    h ^= (uint64_t) first->ne[1] << 48;
++    h ^= (uint64_t) last->ne[1] << 56;
++    return (const void *) (uintptr_t) h;
+ }
+ 
+ static bool ggml_cuda_graph_update_required(ggml_backend_cuda_context * cuda_ctx, ggml_cgraph * cgraph) {

@@ -1,0 +1,7 @@
+date: 2026-10-26T11:21:24+00:00
+bin: /home/pavan/hiraishin-build/bin/spec_harness-build-cuda-hira
+target: /home/pavan/models/Qwen3-8B-Q4_K_M.gguf
+draft: /home/pavan/models/Qwen3-0.6B-Q8_0.gguf
+GGML_CUDA_BATCH_INVARIANT=1
+args: -n 256 -k 5,6 --tau 3 --ngram 0,3 --reps 2 --inv-b 2,5,9 --no-verify-cost
+NVIDIA GeForce RTX 5060 Laptop GPU, 610.74, 292 MHz, 9001 MHz, 72, 10.25 W

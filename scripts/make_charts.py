@@ -1,7 +1,9 @@
 """Benchmark charts for the X post, read straight from the saved logs (no hand-typed numbers).
 
-usage: <python with matplotlib> scripts/make_charts.py   -> docs/x/*.png
-Palette: dataviz reference dark palette (validated: blue/orange/aqua pass all checks on #1a1a19).
+usage: [THEME=beige] <python with matplotlib> scripts/make_charts.py   -> docs/x/*.png
+Data: logs/14_final_v3 (one session: plain, stock speculative, hiraishin lossless) and the verify-cost sweeps.
+Palette: dataviz reference palette. Orange/aqua/blue validated adjacent on both surfaces; gray is the neutral
+baseline (plain decode), not a categorical hue. Every bar and line end carries its value as text.
 """
 import collections
 import json
@@ -18,7 +20,6 @@ OUT = os.path.join(ROOT, "docs", "x")
 os.makedirs(OUT, exist_ok=True)
 
 if os.environ.get("THEME") == "beige":
-    # light steps of the same palette, validated on #f3ecdd (orange/aqua < 3:1, relieved by direct value labels)
     SURFACE, INK, INK2, MUTED, GRID, BASE = "#f3ecdd", "#0b0b0b", "#52514e", "#7a756b", "#e3d9c6", "#c9bda5"
     BLUE, ORANGE, AQUA, GRAY = "#2a78d6", "#eb6834", "#1baf7a", "#9d978b"
 else:
@@ -47,75 +48,93 @@ def header(fig, title, sub):
     fig.text(0.95, 0.03, "hiraishin", fontsize=12, color=MUTED, ha="right")
 
 
-S = "logs/07_ac_session"
-K_BEST, TAU_BEST = 8, 3  # best single lossless setting on both targets in that session (logs/07_ac_session/summary.md)
+def per_prompt(es):
+    acc = collections.defaultdict(list)
+    for e in es:
+        acc[e["prompt"]].append(e["tok_s"])
+    return {p: st.mean(v) for p, v in acc.items()}
+
+
+S = "logs/14_final_v3"
+K, TAU = 5, 3  # the final setting (logs/14_final_v3/summary.md)
 models = [("Q4_K_M", "Qwen3-8B Q4_K_M"), ("Q6_K", "Qwen3-8B Q6_K")]
+
+
+def spec(ev, ng):
+    return [e for e in ev if e["event"] == "spec" and e["k"] == K and e["tau"] == TAU and e["ngram"] == ng]
+
 
 # ---------------------------------------------------------------- chart 1: tok/s per model
 rows = []
 for m, label in models:
     stock, hira = load(f"{S}/stock_{m}"), load(f"{S}/hira_{m}")
-    plain = st.mean(e["tok_s"] for e in hira if e["event"] == "plain")
-    sk = [e for e in stock if e["event"] == "spec" and e["k"] == K_BEST]
-    hk = [e for e in hira if e["event"] == "spec" and e["k"] == K_BEST and e["tau"] == TAU_BEST]
-    rows.append((label, plain, st.mean(e["tok_s"] for e in sk), sum(e["matches_plain"] for e in sk), len(sk),
-                 st.mean(e["tok_s"] for e in hk), sum(e["matches_plain"] for e in hk), len(hk)))
+    plain = st.mean(per_prompt([e for e in hira if e["event"] == "plain"]).values())
+    sk = [e for e in stock if e["event"] == "spec"]
+    h0, h3 = spec(hira, 0), spec(hira, 3)
+    prompts_exact = lambda es: (len({e["prompt"] for e in es if e["matches_plain"]} -
+                                    {e["prompt"] for e in es if not e["matches_plain"]}), len({e["prompt"] for e in es}))
+    rows.append((label, [
+        (plain, None),
+        (st.mean(per_prompt(sk).values()), prompts_exact(sk)),
+        (st.mean(per_prompt(h0).values()), prompts_exact(h0)),
+        (st.mean(per_prompt(h3).values()), prompts_exact(h3)),
+    ]))
 
+series = [("plain decode", GRAY), ("stock llama.cpp speculative", ORANGE),
+          ("hiraishin, draft model (lossless)", AQUA), ("hiraishin, draft model + n-gram (lossless)", BLUE)]
 fig, ax = plt.subplots(figsize=(16, 9), dpi=100)
-fig.subplots_adjust(left=0.07, right=0.95, top=0.74, bottom=0.14)
-w, gap = 0.26, 0.02
-xs = range(len(rows))
-series = [("plain decode", GRAY, 1), ("stock llama.cpp speculative", ORANGE, 2), ("hiraishin (lossless)", BLUE, 5)]
-for si, (name, color, col) in enumerate(series):
-    for xi, r in zip(xs, rows):
-        x = xi + (si - 1) * (w + gap)
-        v = r[col]
+fig.subplots_adjust(left=0.07, right=0.95, top=0.72, bottom=0.12)
+w, gap = 0.2, 0.015
+for xi, (label, vals) in enumerate(rows):
+    for si, ((name, color), (v, ex)) in enumerate(zip(series, vals)):
+        x = xi + (si - 1.5) * (w + gap)
         ax.bar(x, v, w, color=color, label=name if xi == 0 else None, zorder=3)
-        ax.text(x, v + 1.5, f"{v:.1f}", ha="center", va="bottom", fontsize=17, fontweight="bold", color=INK)
-        if col == 2:
-            ax.text(x, 3, f"{r[3]}/{r[4]}\nexact", ha="center", va="bottom", fontsize=13, color=ON_FILL, zorder=4)
-        if col == 5:
-            ax.text(x, 3, f"{r[6]}/{r[7]}\nexact", ha="center", va="bottom", fontsize=13, color=ON_FILL, zorder=4)
-ax.set_xticks(list(xs), [r[0] for r in rows], fontsize=17, color=INK)
+        ax.text(x, v + 1.5, f"{v:.1f}", ha="center", va="bottom", fontsize=16, fontweight="bold", color=INK)
+        if ex:
+            ax.text(x, 3, f"{ex[0]}/{ex[1]}\nexact", ha="center", va="bottom", fontsize=13, color=ON_FILL, zorder=4)
+ax.set_xticks(range(len(rows)), [r[0] for r in rows], fontsize=17, color=INK)
 ax.set_ylabel("tokens / second")
-ax.set_ylim(0, max(r[5] for r in rows) * 1.18)
+ax.set_ylim(0, max(v for _, vals in rows for v, _ in vals) * 1.16)
 ax.grid(axis="x", visible=False)
 ax.tick_params(axis="x", length=0)
-ax.legend(loc="upper left", bbox_to_anchor=(0.0, 1.08), ncol=3, fontsize=14)
+ax.legend(loc="upper left", bbox_to_anchor=(0.0, 1.12), ncol=2, fontsize=14)
 header(fig, "Lossless speculative decoding on an 8 GB laptop GPU",
-       f"RTX 5060 Laptop · greedy · 4 prompts × 256 tokens · draft Qwen3-0.6B Q8_0 · k={K_BEST} (+adaptive stop for hiraishin)\n"
-       "\"exact\" = prompts whose output is token-for-token identical to plain decoding")
+       f"RTX 5060 Laptop · greedy · 4 prompts × 256 tokens, mean · one session · draft Qwen3-0.6B Q8_0 · "
+       f"stock k=8, hiraishin k={K} with adaptive stop\n\"exact\" = prompts whose output is token-for-token identical to plain decoding")
 fig.savefig(os.path.join(OUT, "1_toks_per_model.png"))
 plt.close(fig)
 
 # ---------------------------------------------------------------- chart 2: per prompt, Q4_K_M
 hira = load(f"{S}/hira_Q4_K_M")
-prompts = [e["prompt"] for e in hira if e["event"] == "plain"]
-plain = {e["prompt"]: e["tok_s"] for e in hira if e["event"] == "plain"}
-ours = {e["prompt"]: e["tok_s"] for e in hira if e["event"] == "spec" and e["k"] == K_BEST and e["tau"] == TAU_BEST}
-
+plain = per_prompt([e for e in hira if e["event"] == "plain"])
+m0, m3 = per_prompt(spec(hira, 0)), per_prompt(spec(hira, 3))
+prompts = list(plain)
 fig, ax = plt.subplots(figsize=(16, 9), dpi=100)
-fig.subplots_adjust(left=0.07, right=0.95, top=0.74, bottom=0.12)
-w = 0.36
-for si, (name, color, data) in enumerate([("plain decode", GRAY, plain), ("hiraishin (lossless)", BLUE, ours)]):
+fig.subplots_adjust(left=0.07, right=0.95, top=0.72, bottom=0.12)
+w = 0.26
+for si, (name, color, data) in enumerate([("plain decode", GRAY, plain),
+                                          ("hiraishin, draft model", AQUA, m0),
+                                          ("hiraishin, draft model + n-gram", BLUE, m3)]):
     for xi, p in enumerate(prompts):
-        x = xi + (si - 0.5) * (w + 0.02)
+        x = xi + (si - 1) * (w + 0.015)
         ax.bar(x, data[p], w, color=color, label=name if xi == 0 else None, zorder=3)
-        ax.text(x, data[p] + 1.5, f"{data[p]:.1f}", ha="center", va="bottom", fontsize=17, fontweight="bold", color=INK)
+        ax.text(x, data[p] + 1.5, f"{data[p]:.0f}", ha="center", va="bottom", fontsize=15, fontweight="bold", color=INK,
+                zorder=5, bbox=dict(boxstyle="square,pad=0.15", facecolor=SURFACE, edgecolor="none"))
 ax.axhline(100, color=INK2, linewidth=2, linestyle=(0, (6, 4)), zorder=2)
 ax.text(-0.45, 101.5, "100 tok/s", ha="left", va="bottom", fontsize=14, color=INK2)
 ax.set_xticks(range(len(prompts)), prompts, fontsize=17, color=INK)
 ax.set_ylabel("tokens / second")
-ax.set_ylim(0, 125)
+ax.set_ylim(0, max(m3.values()) * 1.12)
 ax.grid(axis="x", visible=False)
 ax.tick_params(axis="x", length=0)
-ax.legend(loc="upper left", bbox_to_anchor=(0.0, 1.08), ncol=2, fontsize=14)
-header(fig, "Qwen3-8B Q4_K_M: 100+ tok/s on 2 of 4 prompts, lossless",
-       f"RTX 5060 Laptop (8 GB) · greedy · 256 tokens each · k={K_BEST}, adaptive stop tau={TAU_BEST} · "
-       f"mean {st.mean(ours.values()):.1f} vs {st.mean(plain.values()):.1f} tok/s plain\n"
-       "every speculative output is token-for-token identical to plain decoding")
+ax.legend(loc="upper left", bbox_to_anchor=(0.0, 1.12), ncol=3, fontsize=14)
+header(fig, "Qwen3-8B Q4_K_M: over 100 tok/s on average, lossless",
+       f"RTX 5060 Laptop (8 GB) · greedy · 256 tokens per prompt · k={K}, adaptive stop tau={TAU} · mean of 2 runs\n"
+       f"mean: plain {st.mean(plain.values()):.1f}, draft model {st.mean(m0.values()):.1f}, + n-gram {st.mean(m3.values()):.1f} tok/s · "
+       "every output token-for-token identical to plain decoding")
 fig.savefig(os.path.join(OUT, "2_per_prompt_q4km.png"))
 plt.close(fig)
+
 
 # ---------------------------------------------------------------- chart 3: verify cost vs batch size
 def vc_curve(rel, model="target"):
@@ -130,7 +149,7 @@ def vc_curve(rel, model="target"):
 curves = [
     ("stock (switches to MMQ, not exact)", ORANGE, vc_curve("logs/03_harness/q4km_stock")),
     ("batch-invariant, generic mat-vec (exact)", AQUA, vc_curve("logs/05_bi_kernel/v3_Q4_K_M/generic")),
-    ("batch-invariant, hiraishin kernel (exact)", BLUE, vc_curve("logs/05_bi_kernel/v3_Q4_K_M/rows4")),
+    ("batch-invariant, hiraishin kernel (exact)", BLUE, vc_curve("logs/05_bi_kernel/v4_minblocks4_Q4_K_M/rows4")),
 ]
 fig, ax = plt.subplots(figsize=(16, 9), dpi=100)
 fig.subplots_adjust(left=0.08, right=0.80, top=0.74, bottom=0.12)
@@ -145,7 +164,7 @@ ax.set_xticks(range(1, 10))
 ax.set_xlabel("tokens verified in one target pass (B)")
 ax.set_ylabel("time vs a single-token pass (×)")
 ax.set_xlim(0.7, 9.8)
-ax.set_ylim(0.8, max(max(c.values()) for _, _, c in curves) * 1.08)
+ax.set_ylim(0.7, max(max(c.values()) for _, _, c in curves) * 1.08)
 ax.legend(loc="upper left", fontsize=14)
 header(fig, "The price of exact verification, and a kernel to pay less of it",
        "Qwen3-8B Q4_K_M · RTX 5060 Laptop · target forward pass, all logits returned, median of 15\n"
@@ -153,4 +172,4 @@ header(fig, "The price of exact verification, and a kernel to pay less of it",
 fig.savefig(os.path.join(OUT, "3_verify_cost_q4km.png"))
 plt.close(fig)
 
-print("wrote", sorted(os.listdir(OUT)))
+print("wrote", sorted(f for f in os.listdir(OUT) if f.endswith(".png")))
