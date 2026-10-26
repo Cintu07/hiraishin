@@ -388,7 +388,7 @@ class Sheet:
         if to:
             self.line([(x, y), to], color=color, lw=0.8, z=6)
             self.ax.add_patch(Circle(to, 3.2, facecolor=C[color], ec="none", zorder=7))
-        self._circle(x, y, 15, color, fill=self.paper)
+        self._circle(x, y, 15, color, fill=None if self.mode == "pen" else self.paper)
         self._t(x, y + 0.5, str(n), 14, color, z=9)
 
     def notes(self, x, y, items, w=520, size=12, title="notes"):
@@ -438,7 +438,7 @@ class Sheet:
         self.text(x0 + length + 34, y + 24 * d, label, size=10, ha="left", color="soft")
 
     def dot(self, x, y, color, r=5):
-        self._circle(x, y, r, color, fill=self.paper, z=6)
+        self._circle(x, y, r, color, fill=None if self.mode == "pen" else self.paper, z=6)
 
     def swatch(self, x, y, color, w=26, h=14):
         self.ax.add_patch(Rectangle((x, y - h / 2), w, h, facecolor=C[color], ec="none", zorder=5,
@@ -464,6 +464,9 @@ class Sheet:
                     self.ax.plot(*zip(a, b), color=C[color], lw=2.2, zorder=7)
 
     def save(self, path):
-        self.fig.savefig(path, dpi=200, facecolor=self.paper)
-        self.fig.savefig(os.path.splitext(path)[0] + ".svg", facecolor=self.paper)
+        # pen and ink are drawn straight onto the page: no paper colour behind them, so a post's own background shows
+        # through (and a dark mode that inverts images turns the ink light on the dark page)
+        clear = self.mode == "pen"
+        self.fig.savefig(path, dpi=200, facecolor="none" if clear else self.paper, transparent=clear)
+        self.fig.savefig(os.path.splitext(path)[0] + ".svg", facecolor="none" if clear else self.paper, transparent=clear)
         plt.close(self.fig)
