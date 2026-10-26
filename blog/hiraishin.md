@@ -38,7 +38,7 @@ that's the whole argument for losslessness. it rests on one assumption that nobo
 
 ## that assumption is false
 
-in my first measured run, stock llama.cpp speculative decoding matched plain decoding on 8 of 24 runs. the mismatches were deterministic. run them twice and they diverge at the same byte. one prompt flipped "from typing import Dict, Optional, Any" into "Dict, Any, Optional". another rewrote a sentence starting at byte 478.
+in my first measured run, stock llama.cpp speculative decoding matched plain decoding on 8 of 24 runs. the mismatches were deterministic. run them twice and they diverge at the same byte. one prompt flipped `from typing import Dict, Optional, Any` into `Dict, Any, Optional`. another rewrote a sentence starting at byte 478.
 
 this isn't sampling noise. everything is greedy. the target's logits really are different when it sees 5 tokens at once instead of 1.
 
@@ -140,11 +140,11 @@ the first test set was 4 prompts. it found the bugs. it also flattered the resul
 | stock speculative, 8 guesses | 76.6 | 71.4 | 35.5 | 8 of 45 |
 | this, adaptive draft | **92.3** | **91.1** | 75.3 | **45 of 45** |
 
-math gets 108 tok/s, structured output 105, code generation 98, code edits 94, summaries 91, explanations 84, creative writing 76 and long documents 77. stock beats it on math and structured output, 121 and 107, while getting 4 of those 11 outputs wrong.
+math gets 108 tok/s, structured output 105, code generation 98, code edits 94, summaries 91, explanations 84, creative writing 76 and long documents 77. stock beats it on math and structured output, 121 and 107, while getting 7 of those 11 outputs wrong.
 
 ## things that didn't work
 
-**a 2 bit drafter.** a 0.6b model in 2 bits is a third of the size of the 8 bit one. it generated garbage on its own, and its perplexity log read 34,558,588. acceptance was 0.0%.
+**a 2 bit drafter.** a 0.6b model in 2 bits is about 40% of the size of the 8 bit one. it generated garbage on its own, and its perplexity log read 34,558,588. acceptance was 0.0%.
 
 **n-gram drafting.** before calling the draft model, look for the last 3 tokens earlier in the text and propose whatever followed them. on the copy-heavy prompt it took speed from 119 to 153 tok/s. on the 45 prompt set it was slightly worse, 89.8 against 92.3. off by default.
 

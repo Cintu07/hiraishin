@@ -26,26 +26,42 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.collections import LineCollection  # noqa: E402
 from matplotlib.font_manager import FontProperties  # noqa: E402
-from matplotlib.patches import Circle, FancyArrowPatch, Polygon, Rectangle  # noqa: E402
+from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch, Polygon, Rectangle  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 HAND = FontProperties(fname=os.path.join(HERE, "fonts", "Excalifont-Regular.ttf"))
 
 THEMES = {
     "drafting": {
-        "paper": "#f4f1ea", "chalk": False,
+        "paper": "#f4f1ea", "mode": "crisp",
         "colors": {"ink": "#1b2430", "soft": "#6f6a60", "faint": "#a39d90", "blue": "#2f5d9e", "red": "#c8372d",
                    "amber": "#b7791f", "green": "#2e7d4f", "violet": "#5b4a9e"},
         "tints": {"weights": "#dbe4f0", "draft": "#e5e0f1", "kv": "#f2e5cc", "compute": "#e6e1d6", "ok": "#d8eadd",
                   "bad": "#f2d8d2", "plain": "#ebe6da", "none": None},
     },
     "chalkboard": {
-        "paper": "#24302b", "chalk": True,
+        "paper": "#24302b", "mode": "chalk",
         "colors": {"ink": "#ecebe4", "soft": "#b7b9ae", "faint": "#7f8a83", "blue": "#93bfee", "red": "#f19185",
                    "amber": "#f3d273", "green": "#a2dbab", "violet": "#c7aef0"},
         "tints": {"weights": ("#93bfee", 0.16), "draft": ("#c7aef0", 0.16), "kv": ("#f3d273", 0.16),
                   "compute": ("#ecebe4", 0.07), "ok": ("#a2dbab", 0.16), "bad": ("#f19185", 0.18),
                   "plain": ("#ecebe4", 0.06), "none": None},
+    },
+    # pen on paper: blue felt-tip, lines that overshoot their corners, boxes drawn in one loop
+    "pen": {
+        "paper": "#f8f7f2", "mode": "pen",
+        "colors": {"ink": "#2440a5", "soft": "#5a6bb2", "faint": "#a7b0d6", "blue": "#2440a5", "red": "#c8352b",
+                   "amber": "#bb781b", "green": "#287a49", "violet": "#4a3d9f"},
+        "tints": {"weights": ("#2440a5", 0.06), "draft": ("#4a3d9f", 0.06), "kv": ("#bb781b", 0.08),
+                  "compute": None, "ok": ("#287a49", 0.09), "bad": ("#c8352b", 0.09), "plain": None, "none": None},
+    },
+    # the same, in black fine-liner
+    "ink": {
+        "paper": "#fbfbf8", "mode": "pen",
+        "colors": {"ink": "#1d1d1d", "soft": "#5c5c5c", "faint": "#ababab", "blue": "#2440a5", "red": "#c8352b",
+                   "amber": "#bb781b", "green": "#287a49", "violet": "#4a3d9f"},
+        "tints": {"weights": ("#1d1d1d", 0.05), "draft": ("#4a3d9f", 0.06), "kv": ("#bb781b", 0.08),
+                  "compute": None, "ok": ("#287a49", 0.09), "bad": ("#c8352b", 0.09), "plain": None, "none": None},
     },
 }
 
@@ -61,7 +77,8 @@ class Sheet:
         C.clear()
         C.update(self.theme["colors"])
         self.paper = self.theme["paper"]
-        self.chalky = self.theme["chalk"]
+        self.mode = self.theme["mode"]
+        self.chalky = self.mode != "crisp"  # every hand-drawn mode draws strokes instead of vector patches
         self.rng = np.random.default_rng(int(fig) if str(fig).isdigit() else 7)
         self.w, self.h = w, h
         self.fig = plt.figure(figsize=(w / 100, h / 100), dpi=100)
@@ -70,7 +87,11 @@ class Sheet:
         self.ax.set_ylim(h, 0)
         self.ax.axis("off")
         self.fig.patch.set_facecolor(self.paper)
-        if self.chalky:
+        if self.mode == "pen":
+            self._pen_paper()
+            self._pen_header(fig, title, sub)
+            self._pen_corner(source, block_extra or [])
+        elif self.mode == "chalk":
             self._board()
             self._board_header(fig, title, sub)
             self._board_corner(fig, source, block_extra or [])
@@ -194,14 +215,93 @@ class Sheet:
             dp = p[idx] + self.rng.normal(0, 2.0, (len(idx), 2))
             self.ax.scatter(dp[:, 0], dp[:, 1], s=0.6, c=col, alpha=0.35, linewidths=0, zorder=z)
 
+    def _hand(self, pts, color, lw, z, overshoot=None):
+        if self.mode == "pen":
+            self._pen(pts, color, lw, z, overshoot=len(pts) == 2 if overshoot is None else overshoot)
+        else:
+            self._chalk(pts, color, lw, z)
+
+    def _pen(self, pts, color, lw, z, overshoot=True, retrace=None):
+        """a felt-tip stroke: one confident pass with a slight bow, tapered ends, straight lines running a little past
+        their endpoints the way a designer's construction lines do, and now and then a lighter second pass."""
+        p = self._resample(pts, 3.0)
+        n = len(p)
+        if n < 2:
+            return
+        d = np.gradient(p, axis=0)
+        u = d / (np.hypot(d[:, 0], d[:, 1])[:, None] + 1e-9)
+        nrm = np.column_stack([-u[:, 1], u[:, 0]])
+        seg = np.diff(p, axis=0)
+        L = float(np.hypot(seg[:, 0], seg[:, 1]).sum())
+        t = np.linspace(0, 1, n)
+        bow = self.rng.normal(0, min(2.2, L / 160)) * np.sin(math.pi * t)
+        wob = np.zeros(n)
+        for k in (2, 3):
+            wob += self.rng.normal(0, 0.35) * np.sin(math.pi * k * t + self.rng.uniform(0, 6.28))
+        q = p + nrm * (bow + wob)[:, None]
+        if overshoot and L > 30:
+            e0, e1 = self.rng.uniform(3, 11), self.rng.uniform(3, 11)
+            q = np.vstack([q[0] - u[0] * e0, q, q[-1] + u[-1] * e1])
+        col = C.get(color, color)
+        m = len(q)
+        tt = np.linspace(0, 1, m - 1)
+        width = lw * (0.55 + 0.45 * np.sin(math.pi * tt) ** 0.35) * (0.92 + 0.16 * self.rng.random())
+        segs = np.stack([q[:-1], q[1:]], axis=1)
+        self.ax.add_collection(LineCollection(segs, colors=col, linewidths=width, alpha=0.92, capstyle="round",
+                                              joinstyle="round", zorder=z))
+        if (self.rng.random() < 0.3 if retrace is None else retrace) and L > 40:
+            off = self.rng.uniform(0.9, 1.6) * self.rng.choice([-1, 1])
+            a, b = int(m * self.rng.uniform(0.05, 0.25)), int(m * self.rng.uniform(0.7, 0.95))
+            r = q[a:b] + np.vstack([nrm[:1]] * (b - a)) * off if len(nrm) else q[a:b]
+            if len(r) > 2:
+                self.ax.add_collection(LineCollection(np.stack([r[:-1], r[1:]], axis=1), colors=col,
+                                                      linewidths=lw * 0.55, alpha=0.45, capstyle="round", zorder=z))
+
+    def _pen_loop(self, x, y, w, h, color, lw, z):
+        """a rounded box drawn in one go: the pen starts on a side and runs a little past where it began."""
+        r = min(14.0, h / 3, w / 4)
+        path = []
+        for (cx, cy, a0) in ((x + w - r, y + r, -90), (x + w - r, y + h - r, 0), (x + r, y + h - r, 90), (x + r, y + r, 180)):
+            for a in np.linspace(a0, a0 + 90, 7):
+                path.append((cx + r * math.cos(math.radians(a)), cy + r * math.sin(math.radians(a))))
+        path = np.array(path)
+        start = int(self.rng.integers(0, len(path)))
+        loop = np.vstack([path[start:], path[:start], path[start:start + 3]])
+        p = self._resample(loop, 3.0)
+        n = len(p)
+        t = np.linspace(0, 1, n)
+        jitter = sum(self.rng.normal(0, 0.9) * np.sin(2 * math.pi * k * t + self.rng.uniform(0, 6.28)) for k in (1, 2, 3))
+        c = np.array([x + w / 2, y + h / 2])
+        radial = (p - c) / (np.hypot(*(p - c).T)[:, None] + 1e-9)
+        q = p + radial * jitter[:, None]
+        width = lw * (0.6 + 0.4 * np.sin(math.pi * t[:-1]) ** 0.3)
+        self.ax.add_collection(LineCollection(np.stack([q[:-1], q[1:]], axis=1), colors=C.get(color, color),
+                                              linewidths=width, alpha=0.92, capstyle="round", zorder=z))
+
+    def _pen_paper(self):
+        pass  # plain paper, like the sketches it imitates (a grain texture tripled the file size)
+
+    def _pen_header(self, fig, title, sub):
+        self._circle(96, 92, 27, "ink")
+        self._t(96, 93, str(fig), 20, "ink")
+        self._t(142, 94, title.upper(), 27, "ink", ha="left")
+        self._pen([(62, 132), (min(150 + len(title) * 17.5, self.w - 80), 129)], "ink", 2.2, 3, overshoot=True,
+                  retrace=False)
+        if sub:
+            self._t(66, 162, sub, 16, "soft", ha="left")
+
+    def _pen_corner(self, source, extra):
+        self._t(self.w - 52, self.h - 34, f"from {source}" + (f"  ·  {'  ·  '.join(extra)}" if extra else ""), 11,
+                "soft", ha="right")
+
     def line(self, pts, color="ink", lw=1.2, ls="-", z=4):
         if self.chalky:
             if ls != "-":  # dashed chalk: draw every other piece
                 p = self._resample(pts, 3.0)
                 for i in range(0, len(p) - 3, 6):
-                    self._chalk(p[i:i + 4], color, lw * 1.3, z)
+                    self._hand(p[i:i + 4], color, lw * 1.3, z)
             else:
-                self._chalk(pts, color, lw * 1.5, z)
+                self._hand(pts, color, lw * 1.5, z)
             return
         xs, ys = zip(*pts)
         self.ax.plot(xs, ys, color=C.get(color, color), lw=lw, ls=ls, zorder=z, solid_capstyle="butt")
@@ -209,11 +309,18 @@ class Sheet:
     def _rect(self, x, y, w, h, tint, edge="ink", lw=1.3, z=3):
         if tint:
             col, alpha = tint if isinstance(tint, tuple) else (tint, 1.0)
-            self.ax.add_patch(Rectangle((x, y), w, h, facecolor=col, alpha=alpha, ec="none", zorder=z))
-        if self.chalky:
+            if self.mode == "pen":  # the fill follows the rounded pen loop
+                r = min(14.0, h / 3, w / 4)
+                self.ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle=f"round,pad=0,rounding_size={r}",
+                                                 facecolor=col, alpha=alpha, ec="none", zorder=z))
+            else:
+                self.ax.add_patch(Rectangle((x, y), w, h, facecolor=col, alpha=alpha, ec="none", zorder=z))
+        if self.mode == "pen":
+            self._pen_loop(x, y, w, h, edge, lw * 1.5, z + 0.5)
+        elif self.chalky:
             j = lambda: self.rng.uniform(-1.2, 1.2)
             for a, b in (((x, y), (x + w, y)), ((x + w, y), (x + w, y + h)), ((x + w, y + h), (x, y + h)), ((x, y + h), (x, y))):
-                self._chalk([(a[0] + j(), a[1] + j()), (b[0] + j(), b[1] + j())], edge, lw * 1.4, z + 0.5)
+                self._hand([(a[0] + j(), a[1] + j()), (b[0] + j(), b[1] + j())], edge, lw * 1.4, z + 0.5)
         else:
             self.ax.add_patch(Rectangle((x, y), w, h, facecolor="none", ec=C.get(edge, edge), lw=lw, zorder=z + 0.5))
 
@@ -246,7 +353,7 @@ class Sheet:
         n = np.array([-u[1], u[0]])
         if self.chalky:
             for sgn in (1, -1):
-                self._chalk([tip + u * size * 1.4 + n * size * 0.55 * sgn, tip], color, 1.8, z)
+                self._hand([tip + u * size * 1.4 + n * size * 0.55 * sgn, tip], color, 1.8, z, overshoot=False)
             return
         pts = [tip, tip + u * size + n * size * 0.32, tip + u * size - n * size * 0.32]
         self.ax.add_patch(Polygon(pts, closed=True, facecolor=C.get(color, color), ec="none", zorder=z))
@@ -272,7 +379,7 @@ class Sheet:
             self.ax.add_patch(Circle((x, y), r, facecolor=fill, ec="none", zorder=z))
         if self.chalky:
             t = np.linspace(0, 2 * math.pi * 1.05, 40) + self.rng.uniform(0, 6.28)
-            self._chalk(np.column_stack([x + r * np.cos(t), y + r * np.sin(t)]), color, 1.8, z + 0.5)
+            self._hand(np.column_stack([x + r * np.cos(t), y + r * np.sin(t)]), color, 1.8, z + 0.5)
         else:
             self.ax.add_patch(Circle((x, y), r, facecolor="none", ec=C[color], lw=lw, zorder=z + 0.5))
 
@@ -345,14 +452,14 @@ class Sheet:
         if ok:
             pts = [(x - r, y), (x - r * 0.3, y + r * 0.7), (x + r, y - r * 0.8)]
             if self.chalky:
-                self._chalk(pts, color, 2.6, 7)
+                self._hand(pts, color, 2.6, 7, overshoot=False)
             else:
                 self.ax.plot(*zip(*pts), color=C[color], lw=2.2, zorder=7, solid_capstyle="round", solid_joinstyle="round")
         else:
             for a, b in (((x - r * 0.75, y - r * 0.75), (x + r * 0.75, y + r * 0.75)),
                          ((x - r * 0.75, y + r * 0.75), (x + r * 0.75, y - r * 0.75))):
                 if self.chalky:
-                    self._chalk([a, b], color, 2.6, 7)
+                    self._hand([a, b], color, 2.6, 7, overshoot=False)
                 else:
                     self.ax.plot(*zip(a, b), color=C[color], lw=2.2, zorder=7)
 
