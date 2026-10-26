@@ -1,0 +1,28 @@
+0.00.719.794 E llama_init_from_model: failed to initialize the context: eagle3 requires ctx_other to be set (this warning is normal during memory fitting)
+0.00.734.058 W operator(): failed to measure the memory of the extra model, fitting without it: failed to create llama_context from model
+0.00.821.094 W load: control-looking token: 128247 '</s>' was not control-type; this is probably a bug in the model. its type will be overridden
+0.01.732.537 I cmn          init: llama threadpool init, n_threads = 10
+0.01.821.261 I common_speculative_init_result: loading draft model '/home/pavan/models/Qwen3-8B-eagle3-AngelSlim-bf16.gguf'
+0.01.925.564 W load: control-looking token: 128247 '</s>' was not control-type; this is probably a bug in the model. its type will be overridden
+0.05.748.230 I encoded  230 tokens in    0.653 seconds, speed:  352.163 t/s
+0.05.748.230 I decoded  210 tokens in    2.904 seconds, speed:   72.317 t/s
+0.05.748.231 I 
+0.05.748.231 I n_draft   = 8
+0.05.748.231 I n_predict = 210
+0.05.748.231 I n_drafted = 360
+0.05.748.231 I n_accept  = 165
+0.05.748.232 I accept    = 45.833%
+0.05.748.232 I 
+0.05.748.232 I draft:
+
+0.05.748.400 I 
+0.05.748.401 I target:
+
+0.05.748.410 I common_perf_print:    sampling time =      19.37 ms
+0.05.748.411 I common_perf_print:    samplers time =       0.28 ms /   210 tokens
+0.05.748.418 I common_perf_print:        load time =    1043.50 ms
+0.05.748.420 I common_perf_print: prompt eval time =    1624.47 ms /   636 tokens (    2.55 ms per token,   391.51 tokens per second)
+0.05.748.421 I common_perf_print:        eval time =       0.00 ms /     1 runs   (    0.00 ms per token,      inf tokens per second)
+0.05.748.422 I common_perf_print:       total time =    3927.25 ms /   637 tokens
+0.05.748.423 I common_perf_print: unaccounted time =    2283.41 ms /  58.1 %      (total - sampling - prompt eval - eval) / (total)
+0.05.748.424 I common_perf_print:    graphs reused =         44

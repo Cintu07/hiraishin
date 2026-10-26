@@ -1,0 +1,12 @@
+code k=3 exit=0
+code k=5 exit=0
+code k=8 exit=0
+explain k=3 exit=0
+explain k=5 exit=0
+explain k=8 exit=0
+rewrite k=3 exit=0
+rewrite k=5 exit=0
+rewrite k=8 exit=0
+math k=3 exit=0
+math k=5 exit=0
+math k=8 exit=0
