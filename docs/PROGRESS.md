@@ -110,13 +110,20 @@ one session. This is the number to quote; the 4-prompt set over-represented easy
 
 ## Next steps (ordered by expected tok/s per hour of work)
 
-1. Drafter acceptance is the bottleneck (2.52 tokens per pass, 77.3% accepted on the 45 prompt eval). Try a
-   stronger drafter: finish the EAGLE-3 comparison on the 45 prompt set (write logs/16_eagle3/summary.md), then
-   Qwen3-1.7B Q4 as drafter if it fits next to the target in 8 GB.
+1. Drafter acceptance is the bottleneck (2.52 tokens per pass, 77.3% accepted on the 45 prompt eval). Two
+   stronger drafters tried on 2026-11-06, both lose to Qwen3-0.6B Q8_0:
+   - EAGLE-3 (AngelSlim head): 13-37% acceptance outside the copy-heavy prompt, slower than plain at k=3 on code and
+     explain. `logs/16_eagle3/summary.md`
+   - Qwen3-1.7B Q4_K_M: +23% tokens per pass but 39% more per guess; interleaved A/B 84.0/80.5 vs 93.6/92.0 tok/s for
+     the 0.6B, 16/16 exact. `logs/17_drafter_1p7b/summary.md`
+   Left: a drafter as cheap as the 0.6B that agrees more (e.g. a 0.6B fine-tuned on Qwen3-8B outputs), or cheaper
+   drafting (a 0.6B at Q4 to cut draft cost per guess).
 2. Verify cost: the exact kernel is 1.96x at B=9 vs 1.28x for stock mmq. A batch-invariant tiled kernel that keeps
    the single token's per-column add order would close that gap.
-3. Upstream: patch 0005 (graph cache key per shape) is independent of exactness; check whether upstream llama.cpp
-   still keys by `cgraph->nodes[0]` and, if so, offer it as a PR (ask Pawan before posting anything).
+3. Upstream: patch 0005 (graph cache key per shape) is independent of exactness. Checked 2026-11-06: upstream
+   llama.cpp master (4b77dee052) still returns `cgraph->nodes[0]` from `ggml_cuda_graph_get_key`. A PR is possible;
+   it needs an upstream-style key (no getenv, no hash collisions) and an issue/PR duplicate search first. Ask Pawan
+   before posting anything.
 4. Nsight Compute needs "allow GPU performance counters for all users" in the NVIDIA Control Panel (admin); not changed.
 
 ## Resume

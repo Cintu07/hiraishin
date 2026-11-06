@@ -1,0 +1,2 @@
+power.draw [W], enforced.power.limit [W], clocks.max.memory [MHz], pstate, temperature.gpu
+57.35 W, 70.00 W, 12001 MHz, P4, 75
