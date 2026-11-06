@@ -99,16 +99,31 @@ one session. This is the number to quote; the 4-prompt set over-represented easy
 - Bottleneck now: acceptance (2.52 tokens per target pass). Next lever is a better drafter, then the verify kernel.
 - Unexplained: stock-build plain mean 57.0 vs patched-build 61.4 tok/s in the same session (stock ran first).
 
-## Not finished
+## Published (2026-10-26 to 10-27)
 
-- Not yet tried: a stronger drafter that fits in VRAM next to the target, a larger prompt set (4 prompts is small).
-- Nsight Compute needs "allow GPU performance counters for all users" in the NVIDIA Control Panel (admin); not changed.
+- Blog post "why speculative decoding changed my output": https://cintu07.github.io/posts/batch-invariance/
+  Source `blog/batch-invariance.md`, figures `blog/figures.py` (FIGKIT_THEME=ink, FIGMAP renumbers), cover `blog/cover.py`.
+  The blog repo is `C:\Users\pavan\Desktop\portfolio\Cintu07.github.io` (post in content/posts, images in
+  assets/img/hiraishin). Edits made in the portfolio's sandbox editor overwrite the repo copy, so pull before editing.
+- X post (2026-10-25) with replies drafted for the comments.
+- `logs/16_eagle3`: first look at an EAGLE-3 head through the fork's `--spec-type draft-eagle3`, not a win yet, no summary written.
+
+## Next steps (ordered by expected tok/s per hour of work)
+
+1. Drafter acceptance is the bottleneck (2.52 tokens per pass, 77.3% accepted on the 45 prompt eval). Try a
+   stronger drafter: finish the EAGLE-3 comparison on the 45 prompt set (write logs/16_eagle3/summary.md), then
+   Qwen3-1.7B Q4 as drafter if it fits next to the target in 8 GB.
+2. Verify cost: the exact kernel is 1.96x at B=9 vs 1.28x for stock mmq. A batch-invariant tiled kernel that keeps
+   the single token's per-column add order would close that gap.
+3. Upstream: patch 0005 (graph cache key per shape) is independent of exactness; check whether upstream llama.cpp
+   still keys by `cgraph->nodes[0]` and, if so, offer it as a PR (ask Pawan before posting anything).
+4. Nsight Compute needs "allow GPU performance counters for all users" in the NVIDIA Control Panel (admin); not changed.
 
 ## Resume
 
 ```bash
 # inside WSL
-cd /mnt/c/Users/pavan/hiraishin
+cd /mnt/c/Users/pavan/Desktop/portfolio/hiraishin
 bash scripts/run_final.sh q4km_q8draft ~/models/Qwen3-8B-Q4_K_M.gguf   # ~8 min, GPU full
 bash scripts/run_final.sh q6k_q8draft  ~/models/Qwen3-8B-Q6_K.gguf
 python3 -I scripts/analyze_harness.py logs/06_final/q4km_q8draft > logs/06_final/q4km_q8draft/report.md
